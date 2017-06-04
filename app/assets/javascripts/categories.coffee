@@ -1,6 +1,6 @@
-LiveRecord.store.post = LiveRecord.store.create(
+LiveRecord.store.category = LiveRecord.store.create(
   {
-    model: 'post',
+    model: 'category',
     plugins: {
       liveDom: true
     },

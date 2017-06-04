@@ -1,10 +1,7 @@
-this.LiveRecord || (this.LiveRecord = {});
-this.LiveRecord.store || (this.LiveRecord.store = {});
-
 LiveRecord.store.create = (config) ->
   config.model != undefined || throw new Error('missing :model argument')
   config.callbacks != undefined || config.callbacks = {}
-  config.enableDOMCallbacks != undefined || config.enableDOMCallbacks = false
+  config.plugins != undefined || config.callbacks = {}
 
   modelName = config.model
 
@@ -152,48 +149,6 @@ LiveRecord.store.create = (config) ->
     for callback in this._callbacks[callbackKey]
       callback.call(this)
 
-  # DOM callbacks
-
-  Model._update_dom_callback = ->
-    for key, value of this.attributes
-      $('[data-cable-sync-from="' + modelName + '-' + this.id() + '-' + key + '"]').text(this[key]())
-
-  Model._create_dom_callback = ->
-    self = this
-    $recordsContainers = $('[data-cable-model="' + modelName + '"]').parent()
-
-    $recordsContainers.each ->
-      $recordsContainer = $(this);
-      $matchingRecord = $recordsContainer.find('[data-cable-model="' + modelName + '"][data-cable-model-id="' + self.id() + '"]')[0]
-
-      if $matchingRecord == undefined
-        $lastRecord = $recordsContainer.find('[data-cable-model="' + modelName + '"]').last()
-        $clonedRecord = $lastRecord.clone()
-        $cableSyncFromElements = $clonedRecord.find(':not([data-cable-model])').parent().find('[data-cable-sync-from]')
-
-        for cableSyncFromElement in $cableSyncFromElements
-          $cableSyncFromElement = $(cableSyncFromElement)
-          cableSyncFromElementValues = $cableSyncFromElement.attr('data-cable-sync-from').split('-')
-
-          cableSyncFromElementModel = cableSyncFromElementValues[0]
-          cableSyncFromElementId = self.id()
-          cableSyncFromElementAttribute = cableSyncFromElementValues[2]
-
-          newCableSyncFromElementValues = [
-            cableSyncFromElementModel,
-            cableSyncFromElementId,
-            cableSyncFromElementAttribute
-          ]
-
-          $cableSyncFromElement.attr('data-cable-sync-from', newCableSyncFromElementValues.join('-'))
-
-        $lastRecord.after($clonedRecord);
-        Model._update_dom_callback.call(self)
-
-  Model._destroy_dom_callback = ->
-    $recordsContainers = $('[data-cable-model="' + modelName + '"][data-cable-model-id="' + this.id() + '"]')
-    $recordsContainers.remove()
-
   # AFTER MODEL INITIALISATION
 
   # add callbacks from arguments
@@ -201,11 +156,13 @@ LiveRecord.store.create = (config) ->
     for callbackFunction in callbackFunctions
       Model.addCallback(callbackKey, callbackFunction)
 
-  # enable DOM callbacks if specified
-  if config.enableDOMCallbacks
-    Model.addCallback('after:create', Model._create_dom_callback)
-    Model.addCallback('after:update', Model._update_dom_callback)
-    Model.addCallback('after:destroy', Model._destroy_dom_callback)
+
+  # enable plugins from arguments
+  for pluginKey, pluginValue of config.plugins
+    if LiveRecord.plugins != undefined
+      index =  Object.keys(LiveRecord.plugins).indexOf(pluginKey)
+      if index != -1
+        LiveRecord.plugins[pluginKey].applyToModel(Model, modelName, pluginValue)
 
   Model.enableWebhookSyncing()
   Model
