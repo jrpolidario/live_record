@@ -1,5 +1,4 @@
 //= require_self
-//= require ./live_record/store
-//= require ./live_record/plugins
+//= require_directory ./live_record/
 
 this.LiveRecord || (this.LiveRecord = {});

@@ -9,6 +9,7 @@ LiveRecord.store.create = (config) ->
   Model = (attributes) ->
     this.attributes = attributes
     this.modelName = modelName
+    this.subscriptions = []
     # instance callbacks
     this._callbacks = {
       'before:create': [],
@@ -25,62 +26,11 @@ LiveRecord.store.create = (config) ->
           this.attributes[attribute_key]
     this
 
-  Model.enableWebhookSyncing = ->
-    App['live_record_' + modelName + '_create'] = App.cable.subscriptions.create({
-      channel: 'LiveRecordChannel'
-      model: modelName
-      action: 'create'
-    },
-      connected: ->
-      disconnected: ->
-      received: (data) ->
-        attributes = data[modelName]
-        record = new Model(attributes)
-        record.create()
-    )
+  Model.subscribeFromNewRecords = (options) ->
+    LiveRecord.subscribeFromNewRecords(modelName, options)
 
-
-  Model.prototype.enableWebhookSyncing = ->
-    self = this
-
-    # listen for record "update"
-    App['live_record_' + modelName + '_update_' + self.id()] = App.cable.subscriptions.create({
-      channel: 'LiveRecordChannel'
-      model: modelName
-      action: 'update'
-      id: self.id()
-    },
-      connected: ->
-      disconnected: ->
-      received: (data) ->
-        identifier = JSON.parse(this.identifier)
-        attributes = data[modelName]
-        record = Model.all[identifier.id]
-        record.update(attributes)
-    )
-
-    # listen for record "destroy"
-    App['live_record_' + modelName + '_destroy_' + self.id()] = App.cable.subscriptions.create({
-      channel: 'LiveRecordChannel'
-      model: modelName
-      action: 'destroy'
-      id: self.id()
-    },
-      connected: ->
-      disconnected: ->
-      received: (data) ->
-        identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.id]
-        record.destroy()
-    )
-
-  Model.prototype.disableWebhookSyncing = ->
-    self = this
-
-    # remove listener for record "update"
-    App.cable.subscriptions.remove(App['live_record_' + modelName + '_update_' + self.id()])
-    # remove listener for record "destroy"
-    App.cable.subscriptions.remove(App['live_record_' + modelName + '_destroy_' + self.id()])
+  Model.prototype.subscribeFromChanges = ->
+    LiveRecord.subscribeFromChanges(modelName, this.id())
 
   # ALL
   Model.all = {}
@@ -89,8 +39,9 @@ LiveRecord.store.create = (config) ->
   Model.prototype.create = (options) ->
     this._callCallbacks('before:create')
 
-    this.enableWebhookSyncing()
     Model.all[this.attributes.id] = this
+    subscriptions = this.subscribeFromChanges()
+    this.subscriptions = this.subscriptions.concat(subscriptions)
 
     this._callCallbacks('after:create')
     this
@@ -110,7 +61,7 @@ LiveRecord.store.create = (config) ->
   Model.prototype.destroy = ->
     this._callCallbacks('before:destroy')
 
-    this.disableWebhookSyncing()
+    LiveRecord.removeSubscriptions(this.subscriptions)
     delete Model.all[this.attributes.id]
 
     this._callCallbacks('after:destroy')
@@ -164,5 +115,4 @@ LiveRecord.store.create = (config) ->
       if index != -1
         LiveRecord.plugins[pluginKey].applyToModel(Model, modelName, pluginValue)
 
-  Model.enableWebhookSyncing()
   Model
