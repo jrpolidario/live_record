@@ -26,11 +26,44 @@ LiveRecord.store.create = (config) ->
           this.attributes[attribute_key]
     this
 
-  Model.subscribeFromNewRecords = (options) ->
-    LiveRecord.subscribeFromNewRecords(modelName, options)
-
   Model.prototype.subscribeFromChanges = ->
-    LiveRecord.subscribeFromChanges(modelName, this.id())
+    Model = LiveRecord.store[modelName]
+
+    # listen for record "update"
+    subscription1 = App['live_record_' + modelName + '_update_' + this.id()] = App.cable.subscriptions.create({
+      channel: 'LiveRecordChannel'
+      model: modelName
+      action: 'update'
+      id: this.id()
+    },
+      connected: ->
+      disconnected: ->
+      received: (data) ->
+        identifier = JSON.parse(this.identifier)
+        attributes = data[modelName]
+        record = Model.all[identifier.id]
+        record.update(attributes)
+    )
+
+    # listen for record "destroy"
+    subscription2 = App['live_record_' + modelName + '_destroy_' + this.id()] = App.cable.subscriptions.create({
+      channel: 'LiveRecordChannel'
+      model: modelName
+      action: 'destroy'
+      id: this.id()
+    },
+      connected: ->
+      disconnected: ->
+      received: (data) ->
+        identifier = JSON.parse(this.identifier)
+        record = Model.all[identifier.id]
+        record.destroy()
+    )
+
+    this.subscriptions = this.subscriptions.concat([subscription1, subscription2])
+
+  Model.prototype.unsubscribeFromChanges = ->
+    LiveRecord.removeSubscriptions(this.subscriptions)
 
   # ALL
   Model.all = {}
@@ -40,9 +73,8 @@ LiveRecord.store.create = (config) ->
     this._callCallbacks('before:create')
 
     Model.all[this.attributes.id] = this
-    subscriptions = this.subscribeFromChanges()
-    this.subscriptions = this.subscriptions.concat(subscriptions)
-
+    this.subscribeFromChanges()
+    
     this._callCallbacks('after:create')
     this
 
@@ -61,7 +93,7 @@ LiveRecord.store.create = (config) ->
   Model.prototype.destroy = ->
     this._callCallbacks('before:destroy')
 
-    LiveRecord.removeSubscriptions(this.subscriptions)
+    this.unsubscribeFromChanges()
     delete Model.all[this.attributes.id]
 
     this._callCallbacks('after:destroy')
