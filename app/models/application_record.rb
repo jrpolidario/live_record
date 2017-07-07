@@ -1,18 +1,22 @@
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
 
-  after_update :broadcast_record_update
-  after_destroy :broadcast_record_destroy
+  has_many :live_record_messages, as: :recordable
+
+  after_update :__broadcast_record_update__
+  after_destroy :__broadcast_record_destroy__
 
   private
 
-  def broadcast_record_update
-  	model_name = self.class.to_s.underscore
-  	ActionCable.server.broadcast("records_#{model_name}_update_#{id}", model_name => self.attributes.slice(*self.changed))
+  def __broadcast_record_update__
+    message_data =  { 'action' => 'update', 'attributes' => self.attributes.slice(*self.changed) }
+    LiveRecordChannel.broadcast_to(self, message_data)
+    LiveRecordMessage.create!(recordable: self, message_data: message_data.to_json)
   end
 
-  def broadcast_record_destroy
-  	model_name = self.class.to_s.underscore
-  	ActionCable.server.broadcast("records_#{model_name}_destroy_#{id}", nil)
+  def __broadcast_record_destroy__
+    message_data = { 'action' => 'destroy' }
+  	LiveRecordChannel.broadcast_to(self, message_data)
+    LiveRecordMessage.create!(recordable: self, message_data: message_data.to_json)
   end
 end

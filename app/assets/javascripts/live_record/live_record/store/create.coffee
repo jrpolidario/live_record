@@ -30,37 +30,31 @@ LiveRecord.store.create = (config) ->
     Model = LiveRecord.store[modelName]
 
     # listen for record "update"
-    subscription1 = App['live_record_' + modelName + '_update_' + this.id()] = App.cable.subscriptions.create({
+    subscription = App['live_record_' + modelName + '_' + this.id()] = App.cable.subscriptions.create({
       channel: 'LiveRecordChannel'
       model: modelName
-      action: 'update'
       id: this.id()
     },
       connected: ->
-      disconnected: ->
-      received: (data) ->
-        identifier = JSON.parse(this.identifier)
-        attributes = data[modelName]
-        record = Model.all[identifier.id]
-        record.update(attributes)
-    )
-
-    # listen for record "destroy"
-    subscription2 = App['live_record_' + modelName + '_destroy_' + this.id()] = App.cable.subscriptions.create({
-      channel: 'LiveRecordChannel'
-      model: modelName
-      action: 'destroy'
-      id: this.id()
-    },
-      connected: ->
+        @syncRecords()
       disconnected: ->
       received: (data) ->
         identifier = JSON.parse(this.identifier)
         record = Model.all[identifier.id]
-        record.destroy()
+
+        switch data.action
+          when 'update'
+            record.update(data.attributes)
+
+          when 'destroy'
+            record.destroy()
+      syncRecords: ->
+        # perform('syncRecords', store )
+      syncRecord: ->
+
     )
 
-    this.subscriptions = this.subscriptions.concat([subscription1, subscription2])
+    this.subscriptions = this.subscriptions.push(subscription)
 
   Model.prototype.unsubscribeFromChanges = ->
     LiveRecord.removeSubscriptions(this.subscriptions)
@@ -74,7 +68,7 @@ LiveRecord.store.create = (config) ->
 
     Model.all[this.attributes.id] = this
     this.subscribeFromChanges()
-    
+
     this._callCallbacks('after:create')
     this
 
