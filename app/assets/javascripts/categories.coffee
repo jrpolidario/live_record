@@ -1,8 +1,8 @@
-LiveRecord.store.category = LiveRecord.store.create(
+LiveRecord.models.Category = LiveRecord.models.create(
   {
-    model: 'category',
+    modelName: 'Category',
     plugins: {
-      liveDom: true
+      LiveDom: true
     },
     callbacks: {
       'after:destroy': [

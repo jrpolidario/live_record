@@ -1,6 +1,6 @@
 class LiveRecordChannel < ApplicationCable::Channel
   def subscribed
-    model_class = params[:model].camelcase.safe_constantize
+    model_class = params[:model].safe_constantize
 
     if model_class && model_class < ApplicationRecord
       record = model_class.find(params[:id])

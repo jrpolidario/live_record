@@ -1,7 +1,7 @@
 <script>
   var posts_attributes = <%= raw @posts.to_json %>;
   for (var i = 0; i < posts_attributes.length; i++) {
-    var post = new LiveRecord.store.post(posts_attributes[i]);
+    var post = new LiveRecord.models.Post(posts_attributes[i]);
     post.create();
   }
 </script>
@@ -21,10 +21,10 @@
 
   <tbody id='posts-enabled'>
     <% @posts.each do |post| %>
-      <tr data-cable-model='post' data-cable-model-id='<%= post.id %>'>
-        <td data-cable-sync-from='post-<%= post.id %>-title'><%= post.title %></td>
-        <td data-cable-sync-from='post-<%= post.id %>-content'><%= post.content %></td>
-        <td data-cable-sync-from='post-<%= post.id %>-is_enabled'><%= post.is_enabled %></td>
+      <tr data-cable-model='Post' data-cable-model-id='<%= post.id %>'>
+        <td data-cable-sync-from='Post-<%= post.id %>-title'><%= post.title %></td>
+        <td data-cable-sync-from='Post-<%= post.id %>-content'><%= post.content %></td>
+        <td data-cable-sync-from='Post-<%= post.id %>-is_enabled'><%= post.is_enabled %></td>
         <td><%= link_to 'Show', post %></td>
         <td><%= link_to 'Edit', edit_post_path(post) %></td>
         <td><%= link_to 'Destroy', post, method: :delete, data: { confirm: 'Are you sure?' } %></td>

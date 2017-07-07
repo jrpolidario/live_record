@@ -1,8 +1,8 @@
-LiveRecord.store.post = LiveRecord.store.create(
+LiveRecord.models.Post = LiveRecord.models.create(
   {
-    model: 'post',
+    modelName: 'Post',
     plugins: {
-      liveDom: true
+      LiveDom: true
     },
     callbacks: {
       'after:destroy': [

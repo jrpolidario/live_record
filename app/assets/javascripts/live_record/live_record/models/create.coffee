@@ -1,14 +1,11 @@
-LiveRecord.store.create = (config) ->
-  config.model != undefined || throw new Error('missing :model argument')
+LiveRecord.models.create = (config) ->
+  config.modelName != undefined || throw new Error('missing :modelName argument')
   config.callbacks != undefined || config.callbacks = {}
   config.plugins != undefined || config.callbacks = {}
-
-  modelName = config.model
 
   # NEW
   Model = (attributes) ->
     this.attributes = attributes
-    this.modelName = modelName
     this.subscriptions = []
     # instance callbacks
     this._callbacks = {
@@ -26,13 +23,18 @@ LiveRecord.store.create = (config) ->
           this.attributes[attribute_key]
     this
 
+  Model.modelName = config.modelName
+
+  Model.prototype.modelName = ->
+    Model.modelName
+
   Model.prototype.subscribeFromChanges = ->
-    Model = LiveRecord.store[modelName]
+    # Model = LiveRecord.models[Model.modelName]
 
     # listen for record "update"
-    subscription = App['live_record_' + modelName + '_' + this.id()] = App.cable.subscriptions.create({
+    subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create({
       channel: 'LiveRecordChannel'
-      model: modelName
+      model: this.modelName()
       id: this.id()
     },
       connected: ->
@@ -57,7 +59,8 @@ LiveRecord.store.create = (config) ->
     this.subscriptions = this.subscriptions.push(subscription)
 
   Model.prototype.unsubscribeFromChanges = ->
-    LiveRecord.removeSubscriptions(this.subscriptions)
+    for subscription in this.subscriptions
+      App.cable.subscriptions.remove(subscription)
 
   # ALL
   Model.all = {}
@@ -139,6 +142,6 @@ LiveRecord.store.create = (config) ->
     if LiveRecord.plugins != undefined
       index =  Object.keys(LiveRecord.plugins).indexOf(pluginKey)
       if index != -1
-        LiveRecord.plugins[pluginKey].applyToModel(Model, modelName, pluginValue)
+        LiveRecord.plugins[pluginKey].applyToModel(Model, pluginValue)
 
   Model
