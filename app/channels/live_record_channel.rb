@@ -3,11 +3,16 @@ class LiveRecordChannel < ApplicationCable::Channel
     model_class = params[:model_name].safe_constantize
 
     if model_class && model_class < ApplicationRecord
-      record = model_class.find(params[:record_id])
-      stream_for record, coder: ActiveSupport::JSON do |message|
-        if connection.live_record_authorised?(params)
-          transmit message
+      record = model_class.find_by(id: params[:record_id])
+
+      if record.present?
+        stream_for record, coder: ActiveSupport::JSON do |message|
+          if connection.live_record_authorised?(params)
+            transmit message
+          end
         end
+      else
+        transmit action: 'destroy'
       end
     else
       raise ArgumentError, 'Not a correct model name!'

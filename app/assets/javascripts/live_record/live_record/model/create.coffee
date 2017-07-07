@@ -60,7 +60,7 @@ LiveRecord.Model.create = (config) ->
         identifier = JSON.parse(this.identifier)
         record = Model.all[identifier.record_id]
 
-        if record.__staleSince != undefined
+        if record && record.__staleSince != undefined
           @perform(
             'sync_record',
             model_name: identifier.model_name,
