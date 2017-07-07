@@ -1,0 +1,1 @@
+LiveRecord.Model.all = {}

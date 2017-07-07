@@ -1,4 +1,4 @@
-LiveRecord.models.Post = LiveRecord.models.create(
+LiveRecord.Model.create(
   {
     modelName: 'Post',
     plugins: {

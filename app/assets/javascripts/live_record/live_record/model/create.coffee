@@ -1,4 +1,4 @@
-LiveRecord.models.create = (config) ->
+LiveRecord.Model.create = (config) ->
   config.modelName != undefined || throw new Error('missing :modelName argument')
   config.callbacks != undefined || config.callbacks = {}
   config.plugins != undefined || config.callbacks = {}
@@ -29,20 +29,25 @@ LiveRecord.models.create = (config) ->
     Model.modelName
 
   Model.prototype.subscribeFromChanges = ->
-    # Model = LiveRecord.models[Model.modelName]
-
     # listen for record "update"
     subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create({
       channel: 'LiveRecordChannel'
-      model: this.modelName()
-      id: this.id()
+      model_name: this.modelName()
+      record_id: this.id()
     },
       connected: ->
-        @syncRecords()
+        @syncRecord()
+
       disconnected: ->
+        identifier = JSON.parse(this.identifier)
+        record = Model.all[identifier.record_id]
+
+        if record.__staleSince == undefined
+          record.__staleSince = (new Date()).toISOString()
+
       received: (data) ->
         identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.id]
+        record = Model.all[identifier.record_id]
 
         switch data.action
           when 'update'
@@ -50,10 +55,19 @@ LiveRecord.models.create = (config) ->
 
           when 'destroy'
             record.destroy()
-      syncRecords: ->
-        # perform('syncRecords', store )
-      syncRecord: ->
 
+      syncRecord: ->
+        identifier = JSON.parse(this.identifier)
+        record = Model.all[identifier.record_id]
+
+        if record.__staleSince != undefined
+          @perform(
+            'sync_record',
+            model_name: identifier.model_name,
+            record_id: identifier.record_id,
+            stale_since: record.__staleSince
+          )
+          record.__staleSince = undefined
     )
 
     this.subscriptions = this.subscriptions.push(subscription)
@@ -143,5 +157,8 @@ LiveRecord.models.create = (config) ->
       index =  Object.keys(LiveRecord.plugins).indexOf(pluginKey)
       if index != -1
         LiveRecord.plugins[pluginKey].applyToModel(Model, pluginValue)
+
+  # add new Model to collection
+  LiveRecord.Model.all[config.modelName] = Model
 
   Model

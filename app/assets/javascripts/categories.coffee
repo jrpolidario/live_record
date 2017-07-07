@@ -1,4 +1,4 @@
-LiveRecord.models.Category = LiveRecord.models.create(
+LiveRecord.Model.create(
   {
     modelName: 'Category',
     plugins: {
