@@ -9,6 +9,9 @@ LiveRecord.Model.create = (config) ->
     this.subscriptions = []
     # instance callbacks
     this._callbacks = {
+      'after:connect': [],
+      'after:disconnect': [],
+      'after:reconnect': [],
       'before:create': [],
       'after:create': [],
       'before:update': [],
@@ -36,7 +39,18 @@ LiveRecord.Model.create = (config) ->
       record_id: this.id()
     },
       connected: ->
-        @syncRecord()
+        identifier = JSON.parse(this.identifier)
+        record = Model.all[identifier.record_id]
+
+        isAReconnect = record.__staleSince != undefined
+
+        if record && isAReconnect
+          @syncRecord(record)
+
+        if isAReconnect
+          record._callCallbacks('after:reconnect')
+        else
+          record._callCallbacks('after:connect')
 
       disconnected: ->
         identifier = JSON.parse(this.identifier)
@@ -44,6 +58,8 @@ LiveRecord.Model.create = (config) ->
 
         if record.__staleSince == undefined
           record.__staleSince = (new Date()).toISOString()
+
+        record._callCallbacks('after:disconnect')
 
       received: (data) ->
         identifier = JSON.parse(this.identifier)
@@ -56,21 +72,17 @@ LiveRecord.Model.create = (config) ->
           when 'destroy'
             record.destroy()
 
-      syncRecord: ->
-        identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.record_id]
-
-        if record && record.__staleSince != undefined
-          @perform(
-            'sync_record',
-            model_name: identifier.model_name,
-            record_id: identifier.record_id,
-            stale_since: record.__staleSince
-          )
-          record.__staleSince = undefined
+      syncRecord: (record) ->
+        @perform(
+          'sync_record',
+          model_name: record.modelName(),
+          record_id: record.id(),
+          stale_since: record.__staleSince
+        )
+        record.__staleSince = undefined
     )
 
-    this.subscriptions = this.subscriptions.push(subscription)
+    this.subscriptions.push(subscription)
 
   Model.prototype.unsubscribeFromChanges = ->
     for subscription in this.subscriptions
@@ -114,6 +126,9 @@ LiveRecord.Model.create = (config) ->
 
   ## class callbacks
   Model._callbacks = {
+    'after:connect': [],
+    'after:disconnect': [],
+    'after:reconnect': [],
     'before:create': [],
     'after:create': [],
     'before:update': [],
