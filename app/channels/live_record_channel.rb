@@ -7,9 +7,7 @@ class LiveRecordChannel < ApplicationCable::Channel
 
       if record.present?
         stream_for record, coder: ActiveSupport::JSON do |message|
-          if connection.live_record_authorised?(params)
-            transmit message
-          end
+          transmit message if connection.live_record_authorised?(params)
         end
       else
         transmit action: 'destroy'

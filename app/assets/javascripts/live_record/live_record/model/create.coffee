@@ -32,54 +32,56 @@ LiveRecord.Model.create = (config) ->
     Model.modelName
 
   Model.prototype.subscribeFromChanges = ->
-    # listen for record "update"
+    # listen for record changes (update / destroy)
     subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create({
       channel: 'LiveRecordChannel'
       model_name: this.modelName()
       record_id: this.id()
     },
-      connected: ->
+      record: ->
+        return @_record if @_record
         identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.record_id]
+        @_record = Model.all[identifier.record_id]
 
-        isAReconnect = record.__staleSince != undefined
+      # on: connect
+      connected: ->
+        isAReconnect = @record().__staleSince != undefined
 
-        if record && isAReconnect
-          @syncRecord(record)
+        if @record() && isAReconnect
+          @syncRecord(@record())
 
         if isAReconnect
-          record._callCallbacks('after:reconnect')
+          @record()._callCallbacks('after:reconnect')
         else
-          record._callCallbacks('after:connect')
+          @record()._callCallbacks('after:connect')
 
+      # on: disconnect
       disconnected: ->
-        identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.record_id]
+        @record().__staleSince = (new Date()).toISOString() unless @record().__staleSince
 
-        if record.__staleSince == undefined
-          record.__staleSince = (new Date()).toISOString()
+        @record()._callCallbacks('after:disconnect')
 
-        record._callCallbacks('after:disconnect')
-
+      # on: receive
       received: (data) ->
-        identifier = JSON.parse(this.identifier)
-        record = Model.all[identifier.record_id]
+        @actions[data.action].call(this, data)
 
-        switch data.action
-          when 'update'
-            record.update(data.attributes)
+      # responds to received() callback above
+      actions:
+        update: (data) ->
+          @record().update(data.attributes)
 
-          when 'destroy'
-            record.destroy()
+        destroy: (data) ->
+          @record().destroy()
 
-      syncRecord: (record) ->
+      # syncs local record from remote record
+      syncRecord: ->
         @perform(
           'sync_record',
-          model_name: record.modelName(),
-          record_id: record.id(),
-          stale_since: record.__staleSince
+          model_name: @record().modelName(),
+          record_id: @record().id(),
+          stale_since: @record().__staleSince
         )
-        record.__staleSince = undefined
+        @record().__staleSince = undefined
     )
 
     this.subscriptions.push(subscription)
@@ -139,15 +141,11 @@ LiveRecord.Model.create = (config) ->
 
   Model.addCallback = Model.prototype.addCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
-
-    if index == -1
-      this._callbacks[callbackKey].push(callbackFunction)
+    this._callbacks[callbackKey].push(callbackFunction) if index == -1
 
   Model.removeCallback = Model.prototype.removeCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
-    
-    if index != -1
-      this._callbacks[callbackKey].splice(index, 1)
+    this._callbacks[callbackKey].splice(index, 1) if index != -1
 
   Model.prototype._callCallbacks = (callbackKey) ->
     # call class callbacks
@@ -170,8 +168,7 @@ LiveRecord.Model.create = (config) ->
   for pluginKey, pluginValue of config.plugins
     if LiveRecord.plugins != undefined
       index =  Object.keys(LiveRecord.plugins).indexOf(pluginKey)
-      if index != -1
-        LiveRecord.plugins[pluginKey].applyToModel(Model, pluginValue)
+      LiveRecord.plugins[pluginKey].applyToModel(Model, pluginValue) if index != -1
 
   # add new Model to collection
   LiveRecord.Model.all[config.modelName] = Model
