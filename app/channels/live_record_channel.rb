@@ -17,15 +17,15 @@ class LiveRecordChannel < ApplicationCable::Channel
   def sync_record(data)
     find_record_from_params(data.symbolize_keys) do |record|
       if connection.live_record_authorised?(record)
-        last_live_record_message = LiveRecordMessage.where(
+        live_record_update = LiveRecordUpdate.where(
           recordable_type: record.class.name,
           recordable_id: record.id
         ).where(
           'created_at >= ?', DateTime.parse(data['stale_since']) - 1.minute
-        ).order(id: :asc).last
+        ).order(id: :asc)
 
-        if last_live_record_message.present?
-          transmit(JSON.parse(last_live_record_message.message_data))
+        if live_record_update.exists?
+          transmit 'action' => 'update', 'attributes' => record.attributes.slice(*record.class.live_record_whitelisted_attributes)
         end
       else
         raise ForbiddenError, 'You are not authorised'
@@ -48,7 +48,7 @@ class LiveRecordChannel < ApplicationCable::Channel
       if record.present?
         yield record
       else
-        transmit action: 'destroy'
+        transmit 'action' => 'destroy'
       end
     else
       raise BadRequestError, 'Not a correct model name'

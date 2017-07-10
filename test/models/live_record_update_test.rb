@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class LiveRecordMessageTest < ActiveSupport::TestCase
+class LiveRecordUpdateTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

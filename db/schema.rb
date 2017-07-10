@@ -21,13 +21,12 @@ ActiveRecord::Schema.define(version: 20170706153812) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "live_record_messages", force: :cascade do |t|
+  create_table "live_record_updates", force: :cascade do |t|
     t.string   "recordable_type"
     t.integer  "recordable_id"
-    t.text     "message_data"
     t.datetime "created_at",      null: false
-    t.index ["created_at"], name: "index_live_record_messages_on_created_at", using: :btree
-    t.index ["recordable_type", "recordable_id"], name: "index_live_record_messages_on_recordable_type_and_recordable_id", using: :btree
+    t.index ["created_at"], name: "index_live_record_updates_on_created_at", using: :btree
+    t.index ["recordable_type", "recordable_id"], name: "index_live_record_updates_on_recordable_type_and_recordable_id", using: :btree
   end
 
   create_table "posts", force: :cascade do |t|

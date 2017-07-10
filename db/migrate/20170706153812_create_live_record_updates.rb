@@ -1,9 +1,7 @@
-class CreateLiveRecordMessages < ActiveRecord::Migration[5.0]
+class CreateLiveRecordUpdates < ActiveRecord::Migration[5.0]
   def change
-    create_table :live_record_messages do |t|
+    create_table :live_record_updates do |t|
       t.references :recordable, polymorphic: true
-      t.text :message_data
-
       t.datetime :created_at, null: false, index: true
     end
   end

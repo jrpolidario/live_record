@@ -12,8 +12,7 @@ LiveRecord.plugins.LiveDom.applyToModel = (Model, pluginValue) ->
       $updateableElements.filter('[data-cable-update-from="' + Model.modelName + '-' + this.id() + '-' + key + '"]').text(this[key]())
 
   Model._destroyDomCallback = ->
-    $destoyableElements = $('[data-cable-destroy-from]')
-    $destoyableElements.filter('[data-cable-destroy-from="' + Model.modelName + '-' + this.id() + '"]').remove()
+    $('[data-cable-destroy-from="' + Model.modelName + '-' + this.id() + '"]').remove()
 
   Model.addCallback('after:update', Model._updateDomCallback)
   Model.addCallback('after:destroy', Model._destroyDomCallback)
