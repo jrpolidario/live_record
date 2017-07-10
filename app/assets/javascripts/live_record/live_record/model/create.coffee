@@ -166,7 +166,7 @@ LiveRecord.Model.create = (config) ->
 
   # enable plugins from arguments
   for pluginKey, pluginValue of config.plugins
-    if LiveRecord.plugins != undefined
+    if LiveRecord.plugins
       index =  Object.keys(LiveRecord.plugins).indexOf(pluginKey)
       LiveRecord.plugins[pluginKey].applyToModel(Model, pluginValue) if index != -1
 

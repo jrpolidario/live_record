@@ -21,10 +21,10 @@
 
   <tbody id='posts-enabled'>
     <% @posts.each do |post| %>
-      <tr data-cable-model='Post' data-cable-model-id='<%= post.id %>'>
-        <td data-cable-sync-from='Post-<%= post.id %>-title'><%= post.title %></td>
-        <td data-cable-sync-from='Post-<%= post.id %>-content'><%= post.content %></td>
-        <td data-cable-sync-from='Post-<%= post.id %>-is_enabled'><%= post.is_enabled %></td>
+      <tr data-cable-destroy-from='Post-<%= post.id %>'>
+        <td data-cable-update-from='Post-<%= post.id %>-title'><%= post.title %></td>
+        <td data-cable-update-from='Post-<%= post.id %>-content'><%= post.content %></td>
+        <td data-cable-update-from='Post-<%= post.id %>-is_enabled'><%= post.is_enabled %></td>
         <td><%= link_to 'Show', post %></td>
         <td><%= link_to 'Edit', edit_post_path(post) %></td>
         <td><%= link_to 'Destroy', post, method: :delete, data: { confirm: 'Are you sure?' } %></td>

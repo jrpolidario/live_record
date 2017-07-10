@@ -19,8 +19,8 @@
 
   <tbody>
     <% @categories.each do |category| %>
-      <tr data-cable-model='Category' data-cable-model-id='<%= category.id %>'>
-        <td data-cable-sync-from='Category-<%= category.id %>-name'><%= category.name %></td>
+      <tr data-cable-destroy-from='Category-<%= category.id %>'>
+        <td data-cable-update-from='Category-<%= category.id %>-name'><%= category.name %></td>
         <td><%= link_to 'Show', category %></td>
         <td><%= link_to 'Edit', edit_category_path(category) %></td>
         <td><%= link_to 'Destroy', category, method: :delete, data: { confirm: 'Are you sure?' } %></td>

@@ -6,7 +6,7 @@ module ApplicationCable
       self.current_user = find_verified_user
     end
 
-    def live_record_authorised?(_params)
+    def live_record_authorised?(record)
       true
     end
 
