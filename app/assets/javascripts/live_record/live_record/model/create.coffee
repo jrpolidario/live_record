@@ -9,9 +9,10 @@ LiveRecord.Model.create = (config) ->
     this.subscriptions = []
     # instance callbacks
     this._callbacks = {
-      'after:connect': [],
-      'after:disconnect': [],
-      'after:reconnect': [],
+      'on:connect': [],
+      'on:disconnect': [],
+      'on:reconnect': [],
+      'on:response_error': [],
       'before:create': [],
       'after:create': [],
       'before:update': [],
@@ -51,27 +52,37 @@ LiveRecord.Model.create = (config) ->
           @syncRecord(@record())
 
         if isAReconnect
-          @record()._callCallbacks('after:reconnect')
+          @record()._callCallbacks('on:reconnect')
         else
-          @record()._callCallbacks('after:connect')
+          @record()._callCallbacks('on:connect')
 
       # on: disconnect
       disconnected: ->
         @record().__staleSince = (new Date()).toISOString() unless @record().__staleSince
-
-        @record()._callCallbacks('after:disconnect')
+        @record()._callCallbacks('on:disconnect')
 
       # on: receive
       received: (data) ->
-        @actions[data.action].call(this, data)
+        if data.error
+          @onError[data.error.code].call(this, data)
+          @record()._callCallbacks('on:response_error')
+        else
+          @onAction[data.action].call(this, data)
 
       # responds to received() callback above
-      actions:
+      onAction:
         update: (data) ->
           @record().update(data.attributes)
 
         destroy: (data) ->
           @record().destroy()
+
+      # responds to received() callback above
+      onError:
+        forbidden: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
+        bad_request: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
 
       # syncs local record from remote record
       syncRecord: ->
@@ -128,9 +139,10 @@ LiveRecord.Model.create = (config) ->
 
   ## class callbacks
   Model._callbacks = {
-    'after:connect': [],
-    'after:disconnect': [],
-    'after:reconnect': [],
+    'on:connect': [],
+    'on:disconnect': [],
+    'on:reconnect': [],
+    'on:response_error': [],
     'before:create': [],
     'after:create': [],
     'before:update': [],

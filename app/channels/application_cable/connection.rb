@@ -7,13 +7,13 @@ module ApplicationCable
     end
 
     def live_record_authorised?(record)
-      true
+      current_user.present?
     end
 
     private
 
     def find_verified_user
-      # User.find_by(id: cookies.signed[:user_id]) || reject_unauthorized_connection
+      User.find_by(id: cookies.signed[:user_id])
     end
   end
 end

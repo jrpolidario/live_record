@@ -5,17 +5,17 @@ LiveRecord.Model.create(
       LiveDom: true
     },
     callbacks: {
-      'after:connect': [ 
+      'on:connect': [ 
         ( ->
           console.log('connected!!!')
         )
       ],
-      'after:disconnect': [ 
+      'on:disconnect': [ 
         ( ->
           console.log('disconnected!!!')
         )
       ],
-      'after:reconnect': [ 
+      'on:reconnect': [ 
         ( ->
           console.log('reconnected!!!')
         )

@@ -1,6 +1,5 @@
 class LiveRecordChannel < ApplicationCable::Channel
-  class ForbiddenError < StandardError; end
-  class BadRequestError < StandardError; end
+  include ActiveSupport::Rescuable
 
   def subscribed
     find_record_from_params(params) do |record|
@@ -8,7 +7,7 @@ class LiveRecordChannel < ApplicationCable::Channel
         if connection.live_record_authorised?(record)
           transmit message
         else
-          raise ForbiddenError, 'You are not authorised'
+          responds_with_error(:forbidden)
         end
       end
     end
@@ -25,10 +24,11 @@ class LiveRecordChannel < ApplicationCable::Channel
         ).order(id: :asc)
 
         if live_record_update.exists?
-          transmit 'action' => 'update', 'attributes' => record.attributes.slice(*record.class.live_record_whitelisted_attributes)
+          included_attributes = record.attributes.slice(*record.class.live_record_whitelisted_attributes)
+          transmit 'action' => 'update', 'attributes' => included_attributes
         end
       else
-        raise ForbiddenError, 'You are not authorised'
+        responds_with_error(:forbidden)
       end
     end
   end
@@ -51,7 +51,16 @@ class LiveRecordChannel < ApplicationCable::Channel
         transmit 'action' => 'destroy'
       end
     else
-      raise BadRequestError, 'Not a correct model name'
+      responds_with_error(:bad_request, 'Not a correct model name')
+    end
+  end
+
+  def responds_with_error(type, message = nil)
+    case type
+    when :forbidden
+      transmit error: { code: 'forbidden', message: (message || 'You are not authorised') }
+    when :bad_request
+      transmit error: { code: 'bad_request', message: (message || 'Invalid request parameters') }
     end
   end
 end
