@@ -1,6 +1,6 @@
 class Post < ApplicationRecord
   scope :enabled, -> { where(is_enabled: true) }
-
+  
   def self.live_record_whitelisted_attributes(record, current_user)
   	if current_user
 	    %w[
