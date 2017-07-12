@@ -6,12 +6,10 @@ LiveRecord.Model.create = (config) ->
   # NEW
   Model = (attributes) ->
     this.attributes = attributes
-    this.subscriptions = []
     # instance callbacks
     this._callbacks = {
       'on:connect': [],
       'on:disconnect': [],
-      'on:reconnect': [],
       'on:response_error': [],
       'before:create': [],
       'after:create': [],
@@ -32,7 +30,9 @@ LiveRecord.Model.create = (config) ->
   Model.prototype.modelName = ->
     Model.modelName
 
-  Model.prototype.subscribeFromChanges = ->
+  Model.prototype.subscribe = ->
+    return this.subscription if this.subscription != undefined
+
     # listen for record changes (update / destroy)
     subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create({
       channel: 'LiveRecordChannel'
@@ -46,30 +46,27 @@ LiveRecord.Model.create = (config) ->
 
       # on: connect
       connected: ->
-        isAReconnect = @record().__staleSince != undefined
-
-        if @record() && isAReconnect
+        if @record()._staleSince != undefined
           @syncRecord(@record())
 
-        if isAReconnect
-          @record()._callCallbacks('on:reconnect')
-        else
-          @record()._callCallbacks('on:connect')
+        @record()._callCallbacks('on:connect')
 
       # on: disconnect
       disconnected: ->
-        @record().__staleSince = (new Date()).toISOString() unless @record().__staleSince
+        @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
         @record()._callCallbacks('on:disconnect')
 
       # on: receive
       received: (data) ->
         if data.error
+          @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
           @onError[data.error.code].call(this, data)
           @record()._callCallbacks('on:response_error')
+          delete @record()['subscription']
         else
           @onAction[data.action].call(this, data)
 
-      # responds to received() callback above
+      # handler for received() callback above
       onAction:
         update: (data) ->
           @record().update(data.attributes)
@@ -77,7 +74,7 @@ LiveRecord.Model.create = (config) ->
         destroy: (data) ->
           @record().destroy()
 
-      # responds to received() callback above
+      # handler for received() callback above
       onError:
         forbidden: (data) ->
           console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
@@ -90,16 +87,20 @@ LiveRecord.Model.create = (config) ->
           'sync_record',
           model_name: @record().modelName(),
           record_id: @record().id(),
-          stale_since: @record().__staleSince
+          stale_since: @record()._staleSince
         )
-        @record().__staleSince = undefined
+        @record()._staleSince = undefined
     )
 
-    this.subscriptions.push(subscription)
+    this.subscription = subscription
 
-  Model.prototype.unsubscribeFromChanges = ->
-    for subscription in this.subscriptions
-      App.cable.subscriptions.remove(subscription)
+  Model.prototype.unsubscribe = ->
+    return if this.subscription == undefined
+    App.cable.subscriptions.remove(this.subscription)
+    delete this['subscription']
+
+  Model.prototype.isSubscribed = ->
+    this.subscription != undefined
 
   # ALL
   Model.all = {}
@@ -109,7 +110,7 @@ LiveRecord.Model.create = (config) ->
     this._callCallbacks('before:create')
 
     Model.all[this.attributes.id] = this
-    this.subscribeFromChanges()
+    this.subscribe()
 
     this._callCallbacks('after:create')
     this
@@ -129,7 +130,7 @@ LiveRecord.Model.create = (config) ->
   Model.prototype.destroy = ->
     this._callCallbacks('before:destroy')
 
-    this.unsubscribeFromChanges()
+    this.unsubscribe()
     delete Model.all[this.attributes.id]
 
     this._callCallbacks('after:destroy')
@@ -141,7 +142,6 @@ LiveRecord.Model.create = (config) ->
   Model._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
-    'on:reconnect': [],
     'on:response_error': [],
     'before:create': [],
     'after:create': [],

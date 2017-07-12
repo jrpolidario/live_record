@@ -15,11 +15,6 @@ LiveRecord.Model.create(
           console.log('disconnected!!!')
         )
       ],
-      'on:reconnect': [ 
-        ( ->
-          console.log('reconnected!!!')
-        )
-      ],
       'after:destroy': [
         ( ->
           console.log('AAA')

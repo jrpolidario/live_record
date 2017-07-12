@@ -3,8 +3,9 @@ class ApplicationRecord < ActiveRecord::Base
 
   has_many :live_record_updates, as: :recordable
 
-  after_update :__broadcast_record_update__
-  after_destroy :__broadcast_record_destroy__
+  after_update :__reference_changed_attributes__
+  after_update_commit :__broadcast_record_update__
+  after_destroy_commit :__broadcast_record_destroy__
 
   def self.live_record_whitelisted_attributes
     []
@@ -12,8 +13,13 @@ class ApplicationRecord < ActiveRecord::Base
 
   private
 
+  def __reference_changed_attributes__
+    @_live_record_changed_attributes = changed
+  end
+
   def __broadcast_record_update__
-    included_attributes = attributes.slice( *(self.class.live_record_whitelisted_attributes & changed) )
+    included_attributes = attributes.slice(*@_live_record_changed_attributes)
+    @_live_record_changed_attributes= nil
     message_data = { 'action' => 'update', 'attributes' => included_attributes }
     LiveRecordChannel.broadcast_to(self, message_data)
     LiveRecordUpdate.create!(recordable: self)
