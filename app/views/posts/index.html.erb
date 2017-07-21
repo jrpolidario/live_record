@@ -1,9 +1,5 @@
 <script>
-  var posts_attributes = <%= raw @posts.to_json %>;
-  for (var i = 0; i < posts_attributes.length; i++) {
-    var post = new LiveRecord.Model.all.Post(posts_attributes[i]);
-    post.create();
-  }
+  LiveRecord.helpers.loadRecords({modelName: 'Post'})
 </script>
 <p id="notice"><%= notice %></p>
 

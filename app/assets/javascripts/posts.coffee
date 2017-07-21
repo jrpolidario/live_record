@@ -2,7 +2,7 @@ LiveRecord.Model.create(
   {
     modelName: 'Post',
     plugins: {
-      LiveDom: true
+      LiveDOM: true
     },
     callbacks: {
       'on:connect': [ 

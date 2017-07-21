@@ -1,6 +1,6 @@
-this.LiveRecord.plugins.LiveDom || (this.LiveRecord.plugins.LiveDom = {});
+this.LiveRecord.plugins.LiveDOM || (this.LiveRecord.plugins.LiveDOM = {});
 
-LiveRecord.plugins.LiveDom.applyToModel = (Model, pluginValue) ->
+LiveRecord.plugins.LiveDOM.applyToModel = (Model, pluginValue) ->
   return if pluginValue != true
 
   # DOM callbacks

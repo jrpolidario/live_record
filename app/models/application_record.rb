@@ -7,7 +7,7 @@ class ApplicationRecord < ActiveRecord::Base
   after_update_commit :__live_record_broadcast_record_update__
   after_destroy_commit :__live_record_broadcast_record_destroy__
 
-  def self.live_record_whitelisted_attributes
+  def self.live_record_whitelisted_attributes(record, current_user)
     []
   end
 

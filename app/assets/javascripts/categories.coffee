@@ -2,7 +2,7 @@ LiveRecord.Model.create(
   {
     modelName: 'Category',
     plugins: {
-      LiveDom: true
+      LiveDOM: true
     },
     callbacks: {
       'after:destroy': [

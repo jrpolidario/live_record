@@ -1,0 +1,16 @@
+<script>
+  LiveRecord.helpers.loadRecords({modelName: '<%= singular_table_name.camelcase %>'})
+</script>
+<p id="notice"><%%= notice %></p>
+
+<% attributes.reject(&:password_digest?).each do |attribute| -%>
+<p>
+  <strong><%= attribute.human_name %>:</strong>
+  <span data-cable-update-from='<%= singular_table_name.camelcase %>-<%%= @<%= singular_table_name %>.id %>-<%= attribute.name %>'>
+  	<%%= @<%= singular_table_name %>.<%= attribute.name %> %>
+  </span>
+</p>
+
+<% end -%>
+<%%= link_to 'Edit', edit_<%= singular_table_name %>_path(@<%= singular_table_name %>) %> |
+<%%= link_to 'Back', <%= index_helper %>_path %>
