@@ -1,9 +1,0 @@
-# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
-one:
-  live_recordable: one
-  live_recordable_type: Live recordable
-
-two:
-  live_recordable: two
-  live_recordable_type: Live recordable
