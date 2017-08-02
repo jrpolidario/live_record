@@ -1,5 +1,3 @@
-require 'active_support/concern'
-
 module LiveRecord
   module Model
     extend ActiveSupport::Concern
