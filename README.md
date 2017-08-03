@@ -258,7 +258,7 @@
 
   // then we instantiate a Book object
   var book1 = new LiveRecord.Model.all.Book(book1Attributes);
-  // then we push this Book object to the Book store
+  // then we push this Book object to the Book store, which then automatically subscribes them to changes in the backend
   book1.create();
 
   var book2 = new LiveRecord.Model.all.Book(book2Attributes);
