@@ -184,8 +184,6 @@
     #### Model Callbacks supported:
     * `on:connect`
     * `on:disconnect`
-    * `on:connect`
-    * `on:disconnect`
     * `on:response_error`
     * `before:create`
     * `after:create`
