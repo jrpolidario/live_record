@@ -9,7 +9,11 @@ module LiveRecord
 
           if authorised_attributes.present?
             stream_for record, coder: ActiveSupport::JSON do |message|
-              record.reload
+              begin
+                record.reload
+              rescue ActiveRecord::RecordNotFound
+              end
+              
               authorised_attributes = authorised_attributes(record, current_user)
 
               if authorised_attributes.present?
