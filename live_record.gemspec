@@ -5,7 +5,7 @@ require 'live_record/version'
 Gem::Specification.new do |s|
   s.name        = 'live_record'
   s.version     = LiveRecord::VERSION
-  s.date        = '2017-08-01'
+  s.date        = '2017-08-03'
   s.summary     = 'Rails 5 ActionCable Live JS Objects and DOM Elements'
   s.description = "Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable.\nAuto-updates DOM elements mapped to a record attribute, from changes.\nAutomatically resyncs after client-side reconnection."
   s.authors     = ['Jules Roman B. Polidario']
