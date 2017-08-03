@@ -7,7 +7,7 @@ module LiveRecord
       
       after_update :__live_record_reference_changed_attributes__
       after_update_commit :__live_record_broadcast_record_update__
-      after_destroy_commit :__live_record_broadcast_record_destroy__
+      after_destroy :__live_record_broadcast_record_destroy__
 
       def self.live_record_whitelisted_attributes(record, current_user)
         []
