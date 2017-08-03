@@ -108,7 +108,7 @@
 
   > automatically updated if you use Rails scaffold or model generator
 
-  ### Example 1
+  ### Example 1 - Simple Usage
 
   ```ruby
   # app/models/book.rb (example 1)
@@ -121,7 +121,7 @@
   end
   ```
 
-  ### Example 2
+  ### Example 2 - Advanced Usage
 
   ```ruby
   # app/models/book.rb (example 1)
