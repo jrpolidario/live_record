@@ -106,7 +106,7 @@ LiveRecord.Model.create = (config) ->
   Model.all = {}
 
   # CREATE
-  Model.prototype.create = (options) ->
+  Model.prototype.create = () ->
     this._callCallbacks('before:create', undefined)
 
     Model.all[this.attributes.id] = this
@@ -153,11 +153,15 @@ LiveRecord.Model.create = (config) ->
 
   Model.addCallback = Model.prototype.addCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
-    this._callbacks[callbackKey].push(callbackFunction) if index == -1
+    if index == -1
+      this._callbacks[callbackKey].push(callbackFunction)
+      return callbackFunction
 
   Model.removeCallback = Model.prototype.removeCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
-    this._callbacks[callbackKey].splice(index, 1) if index != -1
+    if index != -1
+      this._callbacks[callbackKey].splice(index, 1)
+      return callbackFunction
 
   Model.prototype._callCallbacks = (callbackKey, args) ->
     # call class callbacks

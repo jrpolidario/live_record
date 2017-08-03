@@ -1,4 +1,4 @@
-# WIP! (Work-In-Progress)
+*WIP! (TODO: Tests)*
 
 ## About
 
@@ -300,3 +300,68 @@
 * this does not apply to only `<section>` elements. You can use whatever elements you like.
 
 * You may combine `data-live-record-destroy-from` and `data-live-record-update-from` within the same element.
+
+## JS API
+
+`LiveRecord.Model.create(CONFIG)`
+  * `CONFIG` (Object)
+    * `modelName`: (String, Required)
+    * `callbacks`: (Object)
+      * `on:connect`: (Array of functions)
+      * `on:disconnect`: (Array of functions)
+      * `on:response_error`: (Array of functions; function argument = ERROR_CODE (String))
+      * `before:create`: (Array of functions)
+      * `after:create`: (Array of functions)
+      * `before:update`: (Array of functions)
+      * `after:update`: (Array of functions)
+      * `before:destroy`: (Array of functions)
+      * `after:destroy`: (Array of functions)
+    * `plugins`: (Object)
+      * `LiveDom`: (Boolean)
+  * returns the newly create MODEL
+
+`new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
+  * `ATTRIBUTES` (Object)
+  * returns a MODELINSTANCE of the the Model having ATTRIBUTES attributes
+
+`MODELINSTANCE.modelName()`
+  * returns the model name (i.e. 'Book')
+
+`MODELINSTANCE.attributes`
+  * the attributes object
+
+`MODELINSTANCE.ATTRIBUTENAME()`
+  * returns the attribute value of corresponding to `ATTRIBUTENAME`. (i.e. `bookInstance.id()`, `bookInstance.created_at()`)
+
+`MODELINSTANCE.subscribe()`
+  * subscribes to the `LiveRecordChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
+  * returns the `subscription` object (the ActionCable subscription object itself)
+
+`MODELINSTANCE.isSubscribed()`
+  * returns `true` or `false` accordingly if the instance is subscribed
+
+`MODELINSTANCE.subscription`
+  * the `subscription` object (the ActionCable subscription object itself)
+
+`MODELINSTANCE.create()`
+  * stores the instance to the store, and then `subscribe()` to the `LiveRecordChannel` for syncing
+  * returns the instance
+
+`MODELINSTANCE.update(ATTRIBUTES)`
+  * `ATTRIBUTES` (Object)
+  * updates the attributes of the instance
+  * returns the instance
+
+`MODELINSTANCE.destroy()`
+  * removes the instance from the store, and then `unsubscribe()`
+  * returns the instance
+
+`MODELINSTANCE.addCallback(CALLBACKKEY, CALLBACKFUNCTION)`
+  * `CALLBACKKEY` (String) see supported callbacks above
+  * `CALLBACKFUNCTION` (function Object)
+  * returns the function Object if successfuly added, else returns `false` if callback already added
+
+`MODELINSTANCE.removeCallback(CALLBACKKEY, CALLBACKFUNCTION)`
+  * `CALLBACKKEY` (String) see supported callbacks above
+  * `CALLBACKFUNCTION` (function Object) the function callback that will be removed
+  * returns the function Object if successfully removed, else returns `false` if callback is already removed
