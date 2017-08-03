@@ -6,7 +6,7 @@
 <% attributes.reject(&:password_digest?).each do |attribute| -%>
 <p>
   <strong><%= attribute.human_name %>:</strong>
-  <span data-cable-update-from='<%= singular_table_name.camelcase %>-<%%= @<%= singular_table_name %>.id %>-<%= attribute.name %>'>
+  <span data-live-record-update-from='<%= singular_table_name.camelcase %>-<%%= @<%= singular_table_name %>.id %>-<%= attribute.name %>'>
   	<%%= @<%= singular_table_name %>.<%= attribute.name %> %>
   </span>
 </p>

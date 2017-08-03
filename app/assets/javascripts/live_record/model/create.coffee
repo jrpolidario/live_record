@@ -159,14 +159,14 @@ LiveRecord.Model.create = (config) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
     this._callbacks[callbackKey].splice(index, 1) if index != -1
 
-  Model.prototype._callCallbacks = (callbackKey, arguments) ->
+  Model.prototype._callCallbacks = (callbackKey, args) ->
     # call class callbacks
     for callback in Model._callbacks[callbackKey]
-      callback.apply(this, arguments)
+      callback.apply(this, args)
 
     # call instance callbacks
     for callback in this._callbacks[callbackKey]
-      callback.apply(this, arguments)
+      callback.apply(this, args)
 
   # AFTER MODEL INITIALISATION
 

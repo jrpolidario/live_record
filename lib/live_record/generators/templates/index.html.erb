@@ -17,9 +17,9 @@
 
   <tbody>
     <%% @<%= plural_table_name %>.each do |<%= singular_table_name %>| %>
-      <tr data-cable-destroy-from='<%= singular_table_name.camelcase %>-<%%= <%= singular_table_name %>.id %>'>
+      <tr data-live-record-destroy-from='<%= singular_table_name.camelcase %>-<%%= <%= singular_table_name %>.id %>'>
 <% attributes.reject(&:password_digest?).each do |attribute| -%>
-        <td data-cable-update-from='<%= singular_table_name.camelcase %>-<%%= <%= singular_table_name %>.id %>-<%= attribute.name %>'><%%= <%= singular_table_name %>.<%= attribute.name %> %></td>
+        <td data-live-record-update-from='<%= singular_table_name.camelcase %>-<%%= <%= singular_table_name %>.id %>-<%= attribute.name %>'><%%= <%= singular_table_name %>.<%= attribute.name %> %></td>
 <% end -%>
         <td><%%= link_to 'Show', <%= singular_table_name %> %></td>
         <td><%%= link_to 'Edit', edit_<%= singular_table_name %>_path(<%= singular_table_name %>) %></td>

@@ -46,7 +46,7 @@ module LiveRecord
       def update_application_javascript
         in_root do
           insert_into_file 'app/assets/javascripts/application.js', "//= require live_record\n", before: "//= require_tree ."
-          insert_into_file 'app/assets/javascripts/application.js', "//= require live_record.plugins.live_dom\n", after: "//= require live_record\n" if live_dom
+          insert_into_file 'app/assets/javascripts/application.js', "//= require live_record/plugins/live_dom\n", before: "//= require_tree ." if live_dom
         end
       end
 
