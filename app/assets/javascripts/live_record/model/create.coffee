@@ -49,19 +49,19 @@ LiveRecord.Model.create = (config) ->
         if @record()._staleSince != undefined
           @syncRecord(@record())
 
-        @record()._callCallbacks('on:connect')
+        @record()._callCallbacks('on:connect', undefined)
 
       # on: disconnect
       disconnected: ->
         @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
-        @record()._callCallbacks('on:disconnect')
+        @record()._callCallbacks('on:disconnect', undefined)
 
       # on: receive
       received: (data) ->
         if data.error
           @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
           @onError[data.error.code].call(this, data)
-          @record()._callCallbacks('on:response_error')
+          @record()._callCallbacks('on:response_error', [data.error.code])
           delete @record()['subscription']
         else
           @onAction[data.action].call(this, data)
@@ -107,33 +107,33 @@ LiveRecord.Model.create = (config) ->
 
   # CREATE
   Model.prototype.create = (options) ->
-    this._callCallbacks('before:create')
+    this._callCallbacks('before:create', undefined)
 
     Model.all[this.attributes.id] = this
     this.subscribe()
 
-    this._callCallbacks('after:create')
+    this._callCallbacks('after:create', undefined)
     this
 
   # UPDATE
   Model.prototype.update = (attributes) ->
-    this._callCallbacks('before:update')
+    this._callCallbacks('before:update', undefined)
 
     self = this
     Object.keys(attributes).forEach (attribute_key) ->
       self.attributes[attribute_key] = attributes[attribute_key]
 
-    this._callCallbacks('after:update')
+    this._callCallbacks('after:update', undefined)
     true
 
   # DESTROY
   Model.prototype.destroy = ->
-    this._callCallbacks('before:destroy')
+    this._callCallbacks('before:destroy', undefined)
 
     this.unsubscribe()
     delete Model.all[this.attributes.id]
 
-    this._callCallbacks('after:destroy')
+    this._callCallbacks('after:destroy', undefined)
     this
 
   # CALLBACKS
@@ -159,14 +159,14 @@ LiveRecord.Model.create = (config) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
     this._callbacks[callbackKey].splice(index, 1) if index != -1
 
-  Model.prototype._callCallbacks = (callbackKey) ->
+  Model.prototype._callCallbacks = (callbackKey, arguments) ->
     # call class callbacks
     for callback in Model._callbacks[callbackKey]
-      callback.call(this)
+      callback.apply(this, arguments)
 
     # call instance callbacks
     for callback in this._callbacks[callbackKey]
-      callback.call(this)
+      callback.apply(this, arguments)
 
   # AFTER MODEL INITIALISATION
 

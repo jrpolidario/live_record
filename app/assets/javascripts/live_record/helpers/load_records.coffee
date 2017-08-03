@@ -5,8 +5,9 @@ LiveRecord.helpers.loadRecords = (args) ->
   args['url'] ||= window.location.href
 
   $.getJSON(
-    args['url'],
-    (data) ->
+    args['url']
+  ).done(
+    (data) -> 
       # Array JSON
       if $.isArray(data)
         records_attributes = data;
@@ -24,4 +25,7 @@ LiveRecord.helpers.loadRecords = (args) ->
         record.create();
 
       args['onLoad'].call(this, records) if args['onLoad']
+  ).fail(
+    (jqxhr, textStatus, error) ->
+      args['onError'].call(this, jqxhr, textStatus, error) if args['onError']
   )

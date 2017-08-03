@@ -21,7 +21,7 @@ module LiveRecord
 
       def __live_record_broadcast_record_update__
         included_attributes = attributes.slice(*@_live_record_changed_attributes)
-        @_live_record_changed_attributes= nil
+        @_live_record_changed_attributes = nil
         message_data = { 'action' => 'update', 'attributes' => included_attributes }
         LiveRecordChannel.broadcast_to(self, message_data)
         LiveRecordUpdate.create!(recordable: self)

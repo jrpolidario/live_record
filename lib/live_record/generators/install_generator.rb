@@ -6,8 +6,8 @@ module LiveRecord
       desc 'Copy LiveRecord Javascript template'
       source_root File.expand_path('../templates', __FILE__)
 
+      class_option :live_dom, desc: 'Enables LiveDom plugin: [true, false]', default: 'true'
       class_option :javascript_engine, desc: 'JS engine to be used: [js, coffee]'
-      class_option :js_engine, desc: 'JS engine to be used: [js, coffee]'
       class_option :template_engine, desc: 'Template engine to be used (if LiveDom plugin enabled): [erb, slim, haml]'
 
       def copy_assets_javascript_template
@@ -19,11 +19,11 @@ module LiveRecord
       end
 
       def copy_scaffold_index_template
-        copy_file "index.html.#{template_engine}", "lib/templates/#{template_engine}/scaffold/index.html.#{template_engine}"
+        copy_file "index.html.#{template_engine}", "lib/templates/#{template_engine}/scaffold/index.html.#{template_engine}" if live_dom
       end
 
       def copy_scaffold_show_template
-        copy_file "show.html.#{template_engine}", "lib/templates/#{template_engine}/scaffold/show.html.#{template_engine}"
+        copy_file "show.html.#{template_engine}", "lib/templates/#{template_engine}/scaffold/show.html.#{template_engine}" if live_dom
       end
 
       def copy_live_record_update_model_template
@@ -43,6 +43,13 @@ module LiveRecord
         end
       end
 
+      def update_application_javascript
+        in_root do
+          insert_into_file 'app/assets/javascripts/application.js', "//= require live_record\n", before: "//= require_tree ."
+          insert_into_file 'app/assets/javascripts/application.js', "//= require live_record.plugins.live_dom\n", after: "//= require live_record\n" if live_dom
+        end
+      end
+
       private
 
       def self.next_migration_number(dir)
@@ -50,12 +57,15 @@ module LiveRecord
       end
 
       def javascript_engine
-        byebug
-        options[:javascript_engine] || Rails.application.config.generators.options[:rails][:javascript_engine].to_s
+        Rails.application.config.generators.options[:rails][:javascript_engine] || options[:javascript_engine]
       end
 
       def template_engine
-        options[:template_engine]
+        Rails.application.config.generators.options[:rails][:template_engine] || options[:template_engine]
+      end
+
+      def live_dom
+        options[:live_dom] == 'true' ? true : options[:live_dom] == 'false' ? false : raise(ArgumentError, 'invalid value for --live_dom. Can only be `true` or `false`')
       end
     end
   end
