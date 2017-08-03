@@ -14,7 +14,7 @@
 
 ## Demo
 
-* https://live-record-example.herokuapp.com/posts
+* https://live-record-example.herokuapp.com/
 
 ## Usage Example
 
