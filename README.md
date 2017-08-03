@@ -318,11 +318,11 @@
       * `after:destroy`: (Array of functions)
     * `plugins`: (Object)
       * `LiveDom`: (Boolean)
-  * returns the newly create MODEL
+  * returns the newly create `MODEL`
 
 `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
-  * returns a MODELINSTANCE of the the Model having ATTRIBUTES attributes
+  * returns a `MODELINSTANCE` of the the Model having `ATTRIBUTES` attributes
 
 `MODELINSTANCE.modelName()`
   * returns the model name (i.e. 'Book')
