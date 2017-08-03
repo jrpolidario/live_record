@@ -1,3 +1,5 @@
+# WIP! (Work-In-Progress)
+
 ## About
 
 * Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable
