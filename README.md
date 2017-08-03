@@ -14,7 +14,7 @@
 
 ## Demo
 
-* https://obscure-refuge-63797.herokuapp.com/
+* https://live-record-example.herokuapp.com/posts
 
 ## Usage Example
 
