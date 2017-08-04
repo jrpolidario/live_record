@@ -2,4 +2,13 @@ source 'https://rubygems.org'
 
 gemspec
 
-gem 'rails', '~> 5.0', '< 5.2'
+group :test do 
+  gem 'combustion', '~> 0.7.0'
+  gem 'byebug'
+  gem 'sqlite3'
+  gem 'capybara', '~> 2.15.0', require: false
+  gem 'rspec-rails', '~> 3.5'
+  gem 'factory_girl_rails', require: false
+  gem 'faker'
+  gem 'database_cleaner', '~> 1.6.1'
+end

@@ -1,4 +1,5 @@
 require 'rails'
+require 'rails/generators'
 require 'active_support/concern'
 
 Dir[__dir__ + '/live_record/*.rb'].each {|file| require file }

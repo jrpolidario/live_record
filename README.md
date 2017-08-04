@@ -367,3 +367,6 @@
   * `CALLBACKKEY` (String) see supported callbacks above
   * `CALLBACKFUNCTION` (function Object) the function callback that will be removed
   * returns the function Object if successfully removed, else returns `false` if callback is already removed
+
+## TODOs
+* Change `feature` specs into `system` specs after [this rspec-rails pull request](https://github.com/rspec/rspec-rails/pull/1813) gets merged.
