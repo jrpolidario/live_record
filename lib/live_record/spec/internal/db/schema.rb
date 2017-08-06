@@ -1,8 +1,5 @@
 ActiveRecord::Schema.define do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
-  create_table "live_record_updates", id: :serial, force: :cascade do |t|
+  create_table "live_record_updates", force: :cascade do |t|
     t.string "recordable_type"
     t.integer "recordable_id"
     t.datetime "created_at", null: false

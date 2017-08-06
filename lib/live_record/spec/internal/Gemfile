@@ -1,3 +1,0 @@
-source 'https://rubygems.org'
-
-gem 'live_record', '~> 0.0.4'

@@ -3,5 +3,6 @@
 /db/*.sqlite3-journal
 /log/*
 /tmp/*
+/lib/live_record/spec/internal/tmp
 .byebug_history
 *.gem

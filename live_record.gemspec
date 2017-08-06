@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
   s.required_ruby_version = '~> 2.0'
 
-  s.add_dependency 'rails', '~> 5.0', '< 5.2'
+  s.add_dependency 'rails', '>= 5.0.0', '< 5.2'
 end

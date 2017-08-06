@@ -3,6 +3,14 @@ require 'spec_helper'
 
 ActiveRecord::Migration.maintain_test_schema!
 
+# Capybara.javascript_driver = :poltergeist
+
+# Capybara.register_server('puma') do |app, port|
+#   server = Puma::Server.new(app)
+#   server.add_tcp_listener(Capybara.server_host, port)
+#   server.run
+# end
+
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
   config.include Capybara::DSL

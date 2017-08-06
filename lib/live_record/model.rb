@@ -5,7 +5,7 @@ module LiveRecord
     included do
       has_many :live_record_updates, as: :recordable
       
-      after_update :__live_record_reference_changed_attributes__
+      before_update :__live_record_reference_changed_attributes__
       after_update_commit :__live_record_broadcast_record_update__
       after_destroy_commit :__live_record_broadcast_record_destroy__
 
@@ -24,7 +24,7 @@ module LiveRecord
         @_live_record_changed_attributes = nil
         message_data = { 'action' => 'update', 'attributes' => included_attributes }
         LiveRecordChannel.broadcast_to(self, message_data)
-        LiveRecordUpdate.create!(recordable: self)
+        LiveRecordUpdate.create!(recordable_type: self.class, recordable_id: self.id, created_at: DateTime.now)
       end
 
       def __live_record_broadcast_record_destroy__

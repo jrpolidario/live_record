@@ -68,7 +68,7 @@
 * Add the following to your `Gemfile`:
 
   ```ruby
-  gem 'live_record', '~> 0.0.1'
+  gem 'live_record', '~> 0.0.5'
   ```
 
 * Run:

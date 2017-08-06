@@ -1,8 +1,7 @@
 this.LiveRecord.plugins.LiveDOM || (this.LiveRecord.plugins.LiveDOM = {});
 
-if (window.jQuery === undefined) {
-   throw new Error('jQuery is not loaded yet, and is a dependency of LiveRecord')
-}
+if window.jQuery == undefined
+  throw new Error('jQuery is not loaded yet, and is a dependency of LiveRecord')
 
 LiveRecord.plugins.LiveDOM.applyToModel = (Model, pluginValue) ->
   return if pluginValue != true
