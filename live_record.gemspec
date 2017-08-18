@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.files       = `git ls-files`.split("\n")
   s.homepage    = 'https://github.com/jrpolidario/live_record'
   s.license     = 'MIT'
-  s.required_ruby_version = '~> 2.0'
+  s.required_ruby_version = '~> 2.2'
 
   s.add_dependency 'rails', '>= 5.0.0', '< 5.2'
 end
