@@ -1,6 +1,6 @@
 /.bundle
-/lib/live_record/spec/internal/db/*.sqlite
-/lib/live_record/spec/internal/db/*.sqlite-journal
+*.sqlite
+*.sqlite-journal
 /lib/live_record/spec/internal/log/*
 /lib/live_record/spec/internal/tmp/*
 .byebug_history
