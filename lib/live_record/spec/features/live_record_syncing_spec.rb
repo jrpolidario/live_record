@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.feature 'LiveRecord Syncing', type: :feature do
-	let(:post1) { create(:post) }
-	let(:post2) { create(:post) }
+  let(:post1) { create(:post) }
+  let(:post2) { create(:post) }
   let(:post3) { create(:post) }
-	let!(:posts) { [post1, post2, post3] }
+  let!(:posts) { [post1, post2, post3] }
 
   scenario 'User sees live changes (updates) of post records', js: true do
     visit '/posts'

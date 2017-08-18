@@ -5,3 +5,4 @@
 /lib/live_record/spec/internal/tmp/*
 .byebug_history
 *.gem
+Gemfile.lock

@@ -1,6 +1,6 @@
 require 'bundler'
 
-Bundler.require :default, :test
+Bundler.require :default, :development
 
 require 'live_record'
 require 'action_cable/engine'
