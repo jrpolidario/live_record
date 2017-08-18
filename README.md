@@ -10,6 +10,7 @@
 
 ## Requirements
 
+* **>= Ruby 2.2.2**
 * **>= Rails 5.0**
 
 ## Demo
