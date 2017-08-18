@@ -3,7 +3,7 @@
 ## About
 
 * Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable
-* Auto-updates DOM elements mapped to a record attribute, from changes. **(Optional Plugin)**
+* Auto-updates DOM elements mapped to a record attribute, from changes. **(Optional LiveDOM Plugin)**
 * Automatically resyncs after client-side reconnection.
 
 > `live_record` is intentionally designed for read-only one-way syncing from the backend server, and does not support pushing changes to the Rails server from the client-side JS. Updates from client-side then is intended to use the normal HTTP REST requests.
