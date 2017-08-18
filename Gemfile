@@ -17,6 +17,7 @@ end
 
 group :test do
 	gem 'capybara', '~> 2.15.0', require: false
+  gem 'chromedriver-helper'
   gem 'selenium-webdriver'
   gem 'rspec-rails', '~> 3.5'
   gem 'factory_girl_rails', require: false
