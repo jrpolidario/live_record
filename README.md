@@ -127,6 +127,8 @@
   ```ruby
   # app/models/book.rb (example 1)
   class Book < ApplicationRecord
+    include LiveRecord::Model::Callbacks
+
     def self.live_record_whitelisted_attributes(book, current_user)
       # Add attributes to this array that you would like current_user to have access to when syncing.
       # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
@@ -140,6 +142,8 @@
   ```ruby
   # app/models/book.rb (example 1)
   class Book < ApplicationRecord
+    include LiveRecord::Model::Callbacks
+    
     def self.live_record_whitelisted_attributes(book, current_user)
       # Notice that from above, you also have access to `book` (the record currently requested by the client to be synced),
       # and the `current_user`, the current user who is trying to sync the `book` record.
