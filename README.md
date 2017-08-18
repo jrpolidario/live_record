@@ -94,7 +94,7 @@
   rails generate live_record:install
   ```
 
-  > `rails generate live_record:install --live_dom=false` if you do not need the `LiveDom` plugin; `--live_dom=true` by default
+  > `rails generate live_record:install --live_dom=false` if you do not need the `LiveDOM` plugin; `--live_dom=true` by default
 
 * Run migration to create the `live_record_updates` table, which is going to be used for client reconnection resyncing:
 
@@ -165,7 +165,7 @@
     {
       modelName: 'Book' // should match the Rails model name
       plugins: {
-        LiveDOM: true // remove this if you do not need `LiveDom`
+        LiveDOM: true // remove this if you do not need `LiveDOM`
       }
     }
   )
@@ -294,10 +294,10 @@
 
 ## Plugins
 
-### LiveDom (Requires JQuery)
+### LiveDOM (Requires JQuery)
 
 * enabled by default, unless explicitly removed.
-* `LiveDom` allows DOM elements' text content to be automatically updated, whenever the mapped record-attribute has been updated.
+* `LiveDOM` allows DOM elements' text content to be automatically updated, whenever the mapped record-attribute has been updated.
 
 > text content is safely escaped using JQuery's `.text()` function
 
@@ -338,7 +338,7 @@
       * `before:destroy`: (Array of functions)
       * `after:destroy`: (Array of functions)
     * `plugins`: (Object)
-      * `LiveDom`: (Boolean)
+      * `LiveDOM`: (Boolean)
   * returns the newly create `MODEL`
 
 `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
