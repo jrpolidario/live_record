@@ -3,7 +3,7 @@ require 'spec_helper'
 
 ActiveRecord::Migration.maintain_test_schema!
 
-# Capybara.javascript_driver = :poltergeist
+Capybara.javascript_driver = :selenium_chrome_headless
 Capybara.server = :puma
 
 RSpec.configure do |config|
