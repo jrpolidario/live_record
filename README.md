@@ -80,7 +80,7 @@
 * Add the following to your `Gemfile`:
 
   ```ruby
-  gem 'live_record', '~> 0.1.0'
+  gem 'live_record', '~> 0.1.1'
   ```
 
 * Run:
