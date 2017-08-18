@@ -1,4 +1,4 @@
-*WIP! (TODO: Tests)*
+[![Build Status](https://travis-ci.org/jrpolidario/live_record.svg?branch=master)](https://travis-ci.org/jrpolidario/live_record)
 
 ## About
 
