@@ -389,3 +389,9 @@
 
 ## TODOs
 * Change `feature` specs into `system` specs after [this rspec-rails pull request](https://github.com/rspec/rspec-rails/pull/1813) gets merged.
+
+## Contributing
+* pull requests and forks are very much welcomed! :) Let me know if you find any bug! Thanks
+
+## License
+* MIT
