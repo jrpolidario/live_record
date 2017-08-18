@@ -19,7 +19,7 @@
 
 ## Usage Example
 
-* on the client-side:
+* on the JS client-side:
 
   ```js
   // instantiate a Book object
