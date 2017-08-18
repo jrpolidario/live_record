@@ -3,37 +3,58 @@ require 'rails_helper'
 RSpec.feature 'LiveRecord Syncing', type: :feature do
 	let(:post1) { create(:post) }
 	let(:post2) { create(:post) }
-	let!(:posts) { [post1, post2] }
+  let(:post3) { create(:post) }
+	let!(:posts) { [post1, post2, post3] }
 
-  scenario 'User sees live changes of a post record', js: true do
+  scenario 'User sees live changes (updates) of post records', js: true do
     visit '/posts'
 
-    node = find('td', text: post1.title)
+    post1_title_td = find('td', text: post1.title, wait: 10)
+    post2_title_td = find('td', text: post2.title, wait: 10)
+    post3_title_td = find('td', text: post3.title, wait: 10)
 
-    post1.update!(title: 'newtitle')
+    post1.update!(title: 'post1newtitle')
+    post2.update!(title: 'post2newtitle')
 
-    # Thread.new do
-    # 	byebug
-    # end.join
-    # while true do
-    # 	sleep(0.)
-    # end
+    expect(post1_title_td).to have_content('post1newtitle', wait: 10)
+    expect(post2_title_td).to have_content('post2newtitle', wait: 10)
+    expect(post3_title_td).to have_content(post3.title, wait: 10)
+  end
 
-    Timeout.timeout(Capybara.default_max_wait_time) do
-	    active = page.evaluate_script('jQuery.active')
-	    until active == 0
-	      active = page.evaluate_script('jQuery.active')
-	    end
-	  end
+  scenario 'User sees live changes (destroy) post records', js: true do
+    visit '/posts'
 
-    # puts page.evaluate_script("LiveRecord.Model.all.Post.all")
+    expect{find('td', text: post1.title, wait: 10)}.to_not raise_error
+    expect{find('td', text: post2.title, wait: 10)}.to_not raise_error
+    expect{find('td', text: post3.title, wait: 10)}.to_not raise_error
 
-    message_data = { 'action' => 'update', 'attributes' => {'title' => 'newtitle'} }
+    post1.destroy
+    post2.destroy
 
-    LiveRecordChannel.broadcast_to(post1, message_data)
+    expect{find('td', text: post1.title)}.to raise_error Capybara::ElementNotFound
+    expect{find('td', text: post2.title)}.to raise_error Capybara::ElementNotFound
+    expect{find('td', text: post3.title)}.to_not raise_error
+  end
 
-    puts page.evaluate_script('LiveRecord.Model.all.Post.all[1].isSubscribed()')
+  scenario 'User sees live changes (updates) of post records, but only changes from whitelisted authorised attributes', js: true do
+    visit '/posts'
 
-    expect(node).to have_content('newtitle', wait: 60)
+    post1_title_td = find('td', text: post1.title, wait: 10)
+    post1_content_td = find('td', text: post1.content, wait: 10)
+    post2_title_td = find('td', text: post2.title, wait: 10)
+    post2_content_td = find('td', text: post2.content, wait: 10)
+    post3_title_td = find('td', text: post3.title, wait: 10)
+    post3_content_td = find('td', text: post3.content, wait: 10)
+
+    post1.update!(title: 'post1newtitle', content: 'post1newcontent')
+    post2.update!(title: 'post2newtitle', content: 'post2newcontent')
+    post3.update!(title: 'post3newtitle', content: 'post3newcontent')
+
+    expect(post1_title_td).to have_content('post1newtitle', wait: 10)
+    expect(post1_content_td).to_not have_content('post1newcontent')
+    expect(post2_title_td).to have_content('post2newtitle', wait: 10)
+    expect(post2_content_td).to_not have_content('post2newcontent')
+    expect(post3_title_td).to have_content('post3newtitle', wait: 10)
+    expect(post3_content_td).to_not have_content('post3newcontent')
   end
 end

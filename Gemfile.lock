@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    live_record (0.0.4)
+    live_record (0.1.0)
       rails (>= 5.0.0, < 5.2)
 
 GEM

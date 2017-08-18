@@ -1,8 +1,6 @@
 module LiveRecord
   module Channel
-    extend ActiveSupport::Concern
-
-    included do
+    module Implement
       def subscribed
         find_record_from_params(params) do |record|
           authorised_attributes = authorised_attributes(record, current_user)
@@ -97,7 +95,6 @@ module LiveRecord
           transmit error: { 'code' => 'bad_request', 'message' => (message || 'Invalid request parameters') }
         end
       end
-
     end
   end
 end

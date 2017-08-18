@@ -37,12 +37,6 @@ module LiveRecord
         template 'live_record_channel.rb', File.join('app/channels', 'live_record_channel.rb')
       end
 
-      def update_application_record
-        in_root do
-          insert_into_file 'app/models/application_record.rb', "  include LiveRecord::Model\n", after: "self.abstract_class = true\n"
-        end
-      end
-
       def update_application_javascript
         in_root do
           insert_into_file 'app/assets/javascripts/application.js', "//= require live_record\n", before: "//= require_tree ."

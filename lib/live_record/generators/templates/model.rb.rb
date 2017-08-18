@@ -9,6 +9,9 @@ class <%= class_name %> < <%= parent_class_name.classify %>
 <% if attributes.any?(&:password_digest?) -%>
   has_secure_password
 <% end -%>
+  
+  include LiveRecord::Model::Callbacks
+  has_many :live_record_updates, as: :recordable
 
   def self.live_record_whitelisted_attributes(<%= class_name.underscore %>, current_user)
 	  # Add attributes to this array that you would like current_user to have access to.

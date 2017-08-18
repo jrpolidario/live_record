@@ -37,10 +37,19 @@
 
   // all records in the JS store are automatically subscribed to the backend LiveRecordChannel, which meant syncing (update / destroy) changes from the backend
 
-  // you can add a callback that will be invoked whenever the Book object has been updated
+  // you can add a callback that will be invoked whenever the Book object has been updated (see all supported callbacks further below)
   book.addCallback('after:update', function() {
     // let's say you update the DOM elements here when the attributes have changed
+    // `this` refers to the Book record that has been updated
+    console.log(this);
   });
+
+  // or you can add a Model-wide callback that will be invoked whenever ANY Book object has been updated
+  LiveRecord.Model.all.Book.addCallback('after:update', function() {
+    // let's say you update the DOM elements here when the attributes have changed
+    // `this` refers to the Book record that has been updated
+    console.log(this);
+  })
   ```
 
 * on the backend-side, you can handle attributes authorisation:
@@ -48,6 +57,8 @@
   ```ruby
   # app/models/book.rb
   class Book < ApplicationRecord
+    include LiveRecord::Model::Callbacks
+
     def self.live_record_whitelisted_attributes(book, current_user)
       # Add attributes to this array that you would like `current_user` to have access to when syncing this particular `book`
       # empty array means not-authorised
@@ -68,7 +79,7 @@
 * Add the following to your `Gemfile`:
 
   ```ruby
-  gem 'live_record', '~> 0.0.5'
+  gem 'live_record', '~> 0.1.0'
   ```
 
 * Run:
@@ -231,6 +242,14 @@
     // `loadRecords` asynchronously loads all records (using the current URL) to the store, through a JSON AJAX request.
     // in this example, `loadRecords` will load JSON from the current URL which is /books
     LiveRecord.helpers.loadRecords({modelName: 'Book'})
+  </script>
+  ```
+
+  ```html
+  <!-- app/views/books/index.html.erb -->
+  <script>
+    // `loadRecords` you may also specify a URL to loadRecords (`url` defaults to `window.location.href` which is the current page) 
+    LiveRecord.helpers.loadRecords({modelName: 'Book', url: '/some/url/that/returns_books_as_a_json'})
   </script>
   ```
 
