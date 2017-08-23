@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'sprockets-rails', '~> 3.2'
   s.add_development_dependency 'coffee-rails', '~> 4.2'
   s.add_development_dependency 'jbuilder', '~> 2.7'
-  s.add_development_dependency 'capybara', '~> 2.15'
   s.add_development_dependency 'chromedriver-helper', '~> 1.1'
   s.add_development_dependency 'selenium-webdriver', '~> 3.5'
   s.add_development_dependency 'faker', '~> 1.8'
