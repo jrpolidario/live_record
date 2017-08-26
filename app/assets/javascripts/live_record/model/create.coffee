@@ -6,18 +6,6 @@ LiveRecord.Model.create = (config) ->
   # NEW
   Model = (attributes) ->
     this.attributes = attributes
-    # instance callbacks
-    this._callbacks = {
-      'on:connect': [],
-      'on:disconnect': [],
-      'on:response_error': [],
-      'before:create': [],
-      'after:create': [],
-      'before:update': [],
-      'after:update': [],
-      'before:destroy': [],
-      'after:destroy': []
-    }
 
     Object.keys(this.attributes).forEach (attribute_key) ->
       if Model.prototype[attribute_key] == undefined
@@ -27,18 +15,58 @@ LiveRecord.Model.create = (config) ->
 
   Model.modelName = config.modelName
 
-  Model.prototype.modelName = ->
-    Model.modelName
+  Model.store = {}
+
+  Model.subscriptions = []
+
+  # ALL
+  # Model.all = ->
+  #   new LiveRecord.Model.Relation(Model)
+  Model.all = {}
+
+  Model.subscriptions = []
+
+  Model.subscribe = (conditions, callbacks) ->
+    conditions = conditions || []
+    conditions = [conditions] if conditions.constructor != Array
+    callbacks = callbacks || {}
+    # config.subscription.subchannel_id = window.location.pathname
+
+    subscription = App.cable.subscriptions.create(
+      {
+        channel: 'LiveRecord::PublicationsChannel'
+        model_name: this.modelName
+        conditions: conditions
+      },
+      connected: callbacks['on:connect']
+
+      disconnected: callbacks['on:disconnect']
+
+      received: (data) ->
+        @onAction[data.action].call(this, data)
+
+      onAction:
+        create: (data) ->
+          console.log('HEREEEE!')
+          callbacks['before:create'].call(this, data) if callbacks['before:create']
+          record = new Model(data.attributes)
+          record.create()
+          callbacks['after:create'].call(this, data) if callbacks['after:create']
+    )
+
+    this.subscriptions.push(subscription)
+    subscription
 
   Model.prototype.subscribe = ->
     return this.subscription if this.subscription != undefined
 
     # listen for record changes (update / destroy)
-    subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create({
-      channel: 'LiveRecordChannel'
-      model_name: this.modelName()
-      record_id: this.id()
-    },
+    subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create(
+      {
+        channel: 'LiveRecord::ChangesChannel'
+        model_name: this.modelName()
+        record_id: this.id()
+      },
       record: ->
         return @_record if @_record
         identifier = JSON.parse(this.identifier)
@@ -94,6 +122,9 @@ LiveRecord.Model.create = (config) ->
 
     this.subscription = subscription
 
+  Model.prototype.modelName = ->
+    Model.modelName
+
   Model.prototype.unsubscribe = ->
     return if this.subscription == undefined
     App.cable.subscriptions.remove(this.subscription)
@@ -101,9 +132,6 @@ LiveRecord.Model.create = (config) ->
 
   Model.prototype.isSubscribed = ->
     this.subscription != undefined
-
-  # ALL
-  Model.all = {}
 
   # CREATE
   Model.prototype.create = () ->
@@ -139,7 +167,7 @@ LiveRecord.Model.create = (config) ->
   # CALLBACKS
 
   ## class callbacks
-  Model._callbacks = {
+  Model._callbacks = Model.prototype._callbacks = this._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
     'on:response_error': [],
@@ -151,13 +179,15 @@ LiveRecord.Model.create = (config) ->
     'after:destroy': []
   }
 
-  Model.addCallback = Model.prototype.addCallback = (callbackKey, callbackFunction) ->
+  # adding new callbackd to the list
+  Model.prototype.addCallback = Model.addCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
     if index == -1
       this._callbacks[callbackKey].push(callbackFunction)
       return callbackFunction
 
-  Model.removeCallback = Model.prototype.removeCallback = (callbackKey, callbackFunction) ->
+  # removing a callback from the list
+  Model.prototype.removeCallback = Model.removeCallback = (callbackKey, callbackFunction) ->
     index = this._callbacks[callbackKey].indexOf(callbackFunction)
     if index != -1
       this._callbacks[callbackKey].splice(index, 1)

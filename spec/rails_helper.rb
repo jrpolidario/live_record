@@ -3,7 +3,7 @@ require 'spec_helper'
 
 ActiveRecord::Migration.maintain_test_schema!
 
-Capybara.javascript_driver = :selenium_chrome_headless
+Capybara.javascript_driver = :selenium_chrome #:selenium_chrome_headless
 Capybara.server = :puma
 
 RSpec.configure do |config|
@@ -21,7 +21,7 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
     DatabaseCleaner.strategy = :deletion
   end
-
+  
   config.before(:each) do
     DatabaseCleaner.start
     DatabaseCleaner.clean

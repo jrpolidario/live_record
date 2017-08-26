@@ -57,4 +57,25 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     expect(post3_title_td).to have_content('post3newtitle', wait: 10)
     expect(post3_content_td).to_not have_content('post3newcontent')
   end
+
+  scenario 'User sees live changes (create) of post records', js: true, focus: true do
+    visit '/posts'
+
+    # wait until client-side JS is already connected
+    Timeout.timeout(10) do
+      loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
+    end
+
+    Thread.new do
+      sleep(5)
+    end.join
+
+    post4 = create(:post, is_enabled: true)
+
+    # post4_title_td = find('td', text: post4.title, wait: 60)
+
+    Thread.new do
+      sleep(999)
+    end.join
+  end
 end

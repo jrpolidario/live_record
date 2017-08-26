@@ -1,6 +1,8 @@
 class Post < ApplicationRecord
 	include LiveRecord::Model::Callbacks
 
+  # scope :enabled, -> { where(is_enabled: true) }
+
 	has_many :live_record_updates, as: :recordable
 
   def self.live_record_whitelisted_attributes(post, current_user)
@@ -8,4 +10,9 @@ class Post < ApplicationRecord
 	  # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
 	  [:title]
   end
+
+  # def self.live_record_broadcastable_subchannel_ids(post, current_user)
+  # 	byebug
+  # 	['/posts']
+  # end
 end
