@@ -26,32 +26,30 @@ LiveRecord.Model.create = (config) ->
 
   Model.subscriptions = []
 
-  Model.subscribe = (conditions, callbacks) ->
-    conditions = conditions || []
-    conditions = [conditions] if conditions.constructor != Array
-    callbacks = callbacks || {}
+  Model.subscribe = (config) ->
+    config || (config = {})
+    config.callbacks || (config.callbacks = {})
     # config.subscription.subchannel_id = window.location.pathname
 
     subscription = App.cable.subscriptions.create(
       {
         channel: 'LiveRecord::PublicationsChannel'
         model_name: this.modelName
-        conditions: conditions
+        where: config.where
       },
-      connected: callbacks['on:connect']
+      connected: config.callbacks['on:connect']
 
-      disconnected: callbacks['on:disconnect']
+      disconnected: config.callbacks['on:disconnect']
 
       received: (data) ->
         @onAction[data.action].call(this, data)
 
       onAction:
         create: (data) ->
-          console.log('HEREEEE!')
-          callbacks['before:create'].call(this, data) if callbacks['before:create']
+          config.callbacks['before:create'].call(this, data) if config.callbacks['before:create']
           record = new Model(data.attributes)
-          record.create()
-          callbacks['after:create'].call(this, data) if callbacks['after:create']
+          record.create({render: config.render})
+          config.callbacks['after:create'].call(this, data) if config.callbacks['after:create']
     )
 
     this.subscriptions.push(subscription)
@@ -122,6 +120,9 @@ LiveRecord.Model.create = (config) ->
 
     this.subscription = subscription
 
+  Model.prototype.model = ->
+    Model
+
   Model.prototype.modelName = ->
     Model.modelName
 
@@ -134,7 +135,8 @@ LiveRecord.Model.create = (config) ->
     this.subscription != undefined
 
   # CREATE
-  Model.prototype.create = () ->
+  Model.prototype.create = (options) ->
+    throw new Error(Model.modelName+'('+this.id()+') is already in the store') if Model.all[this.attributes.id]
     this._callCallbacks('before:create', undefined)
 
     Model.all[this.attributes.id] = this
@@ -166,8 +168,19 @@ LiveRecord.Model.create = (config) ->
 
   # CALLBACKS
 
-  ## class callbacks
-  Model._callbacks = Model.prototype._callbacks = this._callbacks = {
+  Model._callbacks = {
+    'on:connect': [],
+    'on:disconnect': [],
+    'on:response_error': [],
+    'before:create': [],
+    'after:create': [],
+    'before:update': [],
+    'after:update': [],
+    'before:destroy': [],
+    'after:destroy': []
+  }
+  
+  Model.prototype._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
     'on:response_error': [],
@@ -208,7 +221,6 @@ LiveRecord.Model.create = (config) ->
   for callbackKey, callbackFunctions of config.callbacks
     for callbackFunction in callbackFunctions
       Model.addCallback(callbackKey, callbackFunction)
-
 
   # enable plugins from arguments
   for pluginKey, pluginValue of config.plugins

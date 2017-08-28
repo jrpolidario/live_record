@@ -12,17 +12,9 @@ class LiveRecord::PublicationsChannel < ApplicationCable::Channel
     	newly_created_record = model_class.find(message['attributes']['id'])
     	active_record_relation = model_class.all
 
-    	params[:conditions].each do |condition|
-    		condition.each do |key, value|
-    			case key
-    			when 'where'
-    				raise "Invalid `:where` having a value of #{value}. Should be a Hash" unless value.is_a? Hash
-    				active_record_relation = active_record_relation.where(value.symbolize_keys)
-    			else
-    				raise "invalid #{key} value."
-    			end
-    		end
-    	end
+			if params[:where].is_a? Hash
+				active_record_relation = active_record_relation.where(params[:where].symbolize_keys)
+  		end
 
     	if active_record_relation.exists?(id: newly_created_record.id)
     		authorised_attributes = authorised_attributes(newly_created_record, current_user)

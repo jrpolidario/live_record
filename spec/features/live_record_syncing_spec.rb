@@ -61,10 +61,10 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'User sees live changes (create) of post records', js: true, focus: true do
     visit '/posts'
 
-    # wait until client-side JS is already connected
-    Timeout.timeout(10) do
-      loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
-    end
+    # # wait until client-side JS is already connected
+    # Timeout.timeout(10) do
+    #   loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
+    # end
 
     Thread.new do
       sleep(5)

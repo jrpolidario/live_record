@@ -1,0 +1,1 @@
+LiveRecord.plugins.LiveDOM.LiveList.all = {}
