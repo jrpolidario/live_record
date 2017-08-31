@@ -59,23 +59,49 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   end
 
   scenario 'User sees live changes (create) of post records', js: true, focus: true do
-    visit '/posts'
+    # visit '/posts'
+    class Klass
+      include LiveRecord::ActionViewExtensions::ViewHelper
+    end
 
-    # # wait until client-side JS is already connected
-    # Timeout.timeout(10) do
-    #   loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
-    # end
+    post = Post.first
 
-    Thread.new do
-      sleep(5)
-    end.join
+    Klass.new.live_record_sync do
+      post.title
+    end
 
-    post4 = create(:post, is_enabled: true)
+    post = Post.second
 
-    # post4_title_td = find('td', text: post4.title, wait: 60)
+    Klass.new.live_record_sync do
+      post.content
+    end
 
-    Thread.new do
-      sleep(999)
-    end.join
+    post1 = Post.first
+    post2 = Post.second
+
+    Klass.new.live_record_sync do
+      post1.content
+      post2.title
+      if post1.id == post2.created_at
+        puts 'WEEhAA'
+      end
+    end
+
+    # # # wait until client-side JS is already connected
+    # # Timeout.timeout(10) do
+    # #   loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
+    # # end
+
+    # Thread.new do
+    #   sleep(5)
+    # end.join
+
+    # post4 = create(:post, is_enabled: true)
+
+    # # post4_title_td = find('td', text: post4.title, wait: 60)
+
+    # Thread.new do
+    #   sleep(999)
+    # end.join
   end
 end

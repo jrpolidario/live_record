@@ -34,7 +34,7 @@ module LiveRecord
 
         def __live_record_broadcast_record_create__
           message_data = { 'action' => 'create', 'attributes' => attributes }
-          ActionCable.server.broadcast "live_record_publications_#{self.class.name.underscore}", message_data
+          ActionCable.server.broadcast "live_record:publications:#{self.class.name.underscore}", message_data
         end
       end
     end

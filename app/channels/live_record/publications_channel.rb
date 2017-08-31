@@ -1,4 +1,4 @@
-class LiveRecord::PublicationsChannel < ApplicationCable::Channel
+class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
 
   def subscribed
   	model_class = params[:model_name].safe_constantize
@@ -8,7 +8,7 @@ class LiveRecord::PublicationsChannel < ApplicationCable::Channel
       reject_subscription
     end
 
-    stream_from "live_record_publications_#{params[:model_name].underscore}", coder: ActiveSupport::JSON do |message|
+    stream_from "live_record:publications:#{params[:model_name].underscore}", coder: ActiveSupport::JSON do |message|
     	newly_created_record = model_class.find(message['attributes']['id'])
     	active_record_relation = model_class.all
 
@@ -26,28 +26,6 @@ class LiveRecord::PublicationsChannel < ApplicationCable::Channel
 	    		transmit response if response.present?
 	    	end
     	end
-    end
-  end
-
-  private
-
-  def authorised_attributes(record, current_user)
-  	whitelisted_attributes = record.class.live_record_whitelisted_attributes(record, current_user)
-  	raise "#{record.model}.live_record_whitelisted_attributes should return an array" unless whitelisted_attributes.is_a? Array 
-    ([:id] + whitelisted_attributes).map(&:to_s)
-  end
-
-  def filtered_message(message, filters)
-    message['attributes'].slice!(*filters) if message['attributes'].present?
-    message
-  end
-
-  def respond_with_error(type, message = nil)
-    case type
-    when :forbidden
-      transmit error: { 'code' => 'forbidden', 'message' => (message || 'You are not authorised') }
-    when :bad_request
-      transmit error: { 'code' => 'bad_request', 'message' => (message || 'Invalid request parameters') }
     end
   end
 end

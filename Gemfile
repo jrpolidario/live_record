@@ -8,4 +8,7 @@ group :development, :test do
   gem 'factory_girl_rails', '~> 4.8', require: false
   # do not require to prevent Capybara deprecation warning on rspec run
   gem 'capybara', '~> 2.15', require: false
+  
+  # TODO: remove
+  gem 'trace'
 end

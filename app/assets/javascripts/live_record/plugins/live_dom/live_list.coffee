@@ -5,18 +5,21 @@ LiveRecord.plugins.LiveDOM.LiveList = (config) ->
   throw new Error('missing :modelName argument') unless config.modelName
   throw new Error(':modelName does not match any created Models') unless LiveRecord.Model.all[config.modelName]
 
-  @listContainer = config.listContainer;
+  @config = config
+
   # by default, sorts by ID ascending 
-  @sort = config.sort ||
-    (record1, record2) ->
+  @config.sort ||= (record1, record2) ->
       LiveRecord.helpers.spaceship(record1.id(), record2.id())
   this
 
 LiveRecord.plugins.LiveDOM.LiveList.prototype.createElement = (record) ->
+  throw new Error('`record` modelName does not match this LiveList modelName') if @config.modelName != record.modelName()
+
   self = this
 
+  $listContainer = @config.listContainer
   # evaluate function first if a function
-  $listContainer = @listContainer() if typeof @listContainer == 'function'
+  $listContainer = $listContainer() if typeof $listContainer == 'function'
 
   # dont recreate if element already exists in LiveList
   return if $listContainer.find('> [data-live-record-element="' + record.modelName() + '-' + record.id() + '"]').length > 0
@@ -62,15 +65,16 @@ LiveRecord.plugins.LiveDOM.LiveList.prototype.createElement = (record) ->
   # TODO: figure out next where to insert this clonedElement into the LiveList
   $listContainer.append($clonedElement)
 
-  $listContainer.syncElements()  
+  this.syncElements()
 
 LiveRecord.plugins.LiveDOM.LiveList.prototype.syncElements = ->
   self = this
 
+  $listContainer = @config.listContainer
   # evaluate function first if a function
-  listContainer = @listContainer() if typeof @listContainer == 'function'
+  $listContainer = $listContainer() if typeof $listContainer == 'function'
 
-  $elements = listContainer.find('> [data-live-record-element]')
+  $elements = $listContainer.find('> [data-live-record-element]')
 
   # check for elements that are not yet in the _elements-store
   $elements.each(
