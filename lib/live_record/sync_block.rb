@@ -1,17 +1,25 @@
 class LiveRecord::SyncBlock
   Thread.current['live_record.current_tracked_records'] = {}
 
+  attr_accessor :uid
   attr_accessor :tracked_records
 
   class << self
+    attr_accessor :store
+
     def add_to_tracked_records(record, attribute_name)
       Thread.current['live_record.current_tracked_records'][{model: record.class.name.to_sym, record_id: record.id}] ||=  []
       Thread.current['live_record.current_tracked_records'][{model: record.class.name.to_sym, record_id: record.id}] << attribute_name
+    end
+
+    def store
+      @store ||= []
     end
   end
 
   def initialize(block)
     @block = block
+    @uid = SecureRandom.uuid
   end
 
   def call_block_and_track_records
@@ -23,7 +31,15 @@ class LiveRecord::SyncBlock
   end
 
   def to_s
-    @block_evaluated_value
+    <<-eos
+      <script>
+        LiveRecord.all.add
+      </script>
+      <span data-live-record-sync-block-uuid='#{@uid}'>
+        #{@block_evaluated_value}
+      </span>
+    eos
+      .html_safe
   end
 
   module ActiveRecordExtensions
@@ -41,7 +57,23 @@ class LiveRecord::SyncBlock
     def live_record_sync(&block)
       sync_block = LiveRecord::SyncBlock.new(block)
       sync_block.call_block_and_track_records
+      LiveRecord::SyncBlock.store << sync_block
       sync_block
+    end
+  end
+
+  module ControllerCallbacks
+    extend ActiveSupport::Concern
+
+    included do
+      # clear SyncBlock store
+      before_action do
+        LiveRecord::SyncBlock.store.clear
+      end
+
+      after_action do
+        LiveRecord::SyncBlock.store.clear
+      end
     end
   end
 
@@ -66,4 +98,5 @@ end
 
 ActiveSupport.on_load(:action_controller) do
   include LiveRecord::SyncBlock::Helpers
+  include LiveRecord::SyncBlock::ControllerCallbacks
 end
