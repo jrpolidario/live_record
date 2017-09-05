@@ -59,34 +59,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   end
 
   scenario 'User sees live changes (create) of post records', js: true, focus: true do
-    # visit '/posts'
-    class Klass
-      include LiveRecord::ActionViewExtensions::ViewHelper
-    end
-
-    post = Post.first
-
-    Klass.new.live_record_sync do
-      post.title
-    end
-
-    post = Post.second
-
-    Klass.new.live_record_sync do
-      post.content
-    end
-
-    post1 = Post.first
-    post2 = Post.second
-
-    Klass.new.live_record_sync do
-      post1.content
-      post2.title
-      if post1.id == post2.created_at
-        puts 'WEEhAA'
-      end
-    end
-
+    visit '/posts'
+    
     # # # wait until client-side JS is already connected
     # # Timeout.timeout(10) do
     # #   loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true

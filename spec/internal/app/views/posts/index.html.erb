@@ -39,4 +39,4 @@
 
 <%= link_to 'New Post', new_post_path %>
 
-<%#= live_record_sync { @posts[0].title } %>
+<%= live_record_sync { link_to 'Show', @posts[0] } %>
