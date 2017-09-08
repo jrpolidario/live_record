@@ -5,9 +5,11 @@
     modelName: 'Post',
     listContainer: function() { return $('tbody') },
     sort: function(post1, post2) { return LiveRecord.helpers.spaceship(post1.created_at(), post2.created_at()) }
+    // TODO:
+    // fix link_to below
   });
 
-  LiveRecord.Model.all.Post.subscribe({ where: { is_enabled: true }});
+  LiveRecord.Model.all.Post.subscribe({ where: { is_enabled: true, content: 'somecontent' }});
 </script>
 <p id="notice"><%= notice %></p>
 
@@ -38,5 +40,3 @@
 <br>
 
 <%= link_to 'New Post', new_post_path %>
-
-<%= live_record_sync { link_to 'Show', @posts[0] } %>

@@ -4,6 +4,7 @@ class PostsController < ApplicationController
   # GET /posts
   # GET /posts.json
   def index
+    request.session['init'] = true if request.session.id.nil?
     @posts = Post.all
   end
 

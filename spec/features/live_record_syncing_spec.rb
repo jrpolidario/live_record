@@ -36,6 +36,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     expect{find('td', text: post3.title)}.to_not raise_error
   end
 
+  # see spec/internal/app/models/post.rb to view specified whitelisted attributes
   scenario 'User sees live changes (updates) of post records, but only changes from whitelisted authorised attributes', js: true do
     visit '/posts'
 
@@ -58,25 +59,52 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     expect(post3_content_td).to_not have_content('post3newcontent')
   end
 
-  scenario 'User sees live changes (create) of post records', js: true, focus: true do
+  # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
+  scenario 'User sees live changes (create) of post records where specified "conditions" matched', js: true do
     visit '/posts'
 
-    byebug
-    # # # wait until client-side JS is already connected
-    # # Timeout.timeout(10) do
-    # #   loop while page.evaluate_script('LiveRecord.Model.all.Post.subscriptions[0].consumer.connection.disconnected') == true
-    # # end
+    Thread.new do
+      sleep(5)
+    end.join
 
-    # Thread.new do
-    #   sleep(5)
-    # end.join
+    post4 = create(:post, is_enabled: true)
+    post5 = create(:post, is_enabled: false)
 
-    # post4 = create(:post, is_enabled: true)
+    expect{find('td', text: post4.title)}.to_not raise_error
+    expect{find('td', text: post5.title)}.to raise_error Capybara::ElementNotFound
+  end
 
-    # # post4_title_td = find('td', text: post4.title, wait: 60)
+  # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
+  scenario 'User sees live changes (create) of post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
+    visit '/posts'
 
-    # Thread.new do
-    #   sleep(999)
-    # end.join
+    Thread.new do
+      sleep(5)
+    end.join
+
+    # in index.html.erb:
+    # LiveRecord.Model.all.Post.subscribe({ where: { is_enabled: true, content: 'somecontent' }});
+    # because `content` is not whitelisted, therefore the `content` condition above is disregarded
+    post4 = create(:post, is_enabled: true, content: 'somecontent')
+    post5 = create(:post, is_enabled: true, content: 'contentisnotwhitelistedthereforewontbeconsidered')
+
+    expect{find('td', text: post4.title)}.to_not raise_error
+    expect{find('td', text: post5.title)}.to_not raise_error
+  end
+
+  # see spec/internal/app/models/post.rb to view specified whitelisted attributes
+  scenario 'User sees new (create) post records having only the whitelisted authorised attributes', js: true do
+    visit '/posts'
+
+    Thread.new do
+      sleep(5)
+    end.join
+
+    post4 = create(:post, is_enabled: true, title: 'sometitle', content: 'somecontent')
+
+    find('td', text: post4.title, wait: 10)
+
+    expect{find('td', text: post4.title)}.to_not raise_error
+    expect{find('td', text: post4.content)}.to raise_error Capybara::ElementNotFound
   end
 end
