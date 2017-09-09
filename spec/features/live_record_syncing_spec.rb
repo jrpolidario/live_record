@@ -99,7 +99,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   end
 
   # see spec/internal/app/models/post.rb to view specified whitelisted attributes
-  scenario 'JS-Client receives live new (create) post records having only the whitelisted authorised attributes', js: true, focus: true do
+  scenario 'JS-Client receives live new (create) post records having only the whitelisted authorised attributes', js: true do
     visit '/posts'
 
     Thread.new do
@@ -107,7 +107,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     end.join
 
     post4 = create(:post, is_enabled: true, title: 'sometitle', content: 'somecontent')
-    
+
     wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined") }, becomes: -> (value) { value == false }
     expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].title()")).to eq post4.title
     expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].content()")).to eq nil
