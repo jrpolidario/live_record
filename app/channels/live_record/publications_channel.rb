@@ -1,3 +1,9 @@
+# This channel streams new records to connected clients whenever the "where" condition supplied by the client matches
+# This implementation can be quite inefficient because there's only one pub-sub queue used for each model, but because of
+# constraints ( see https://github.com/jrpolidario/live_record/issues/2 ) and because Users are authorised-validated anyway
+# in each stream, then there's already an overhead delay. I am prioritising development convenience (as Rails does), in order
+# to achieve a simpler API; in this example, it would be something like in JS:
+# `LiveRecord.Model.all.Book.subscribe({where: is_enabled: true})`
 class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
 
   def subscribed

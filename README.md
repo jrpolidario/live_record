@@ -363,6 +363,9 @@
   * subscribes to the `LiveRecordChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
   * returns the `subscription` object (the ActionCable subscription object itself)
 
+`MODELINSTANCE.unsubscribe()`
+  * unsubscribes to the `LiveRecordChannel`, thereby will not be receiving changes (updates/destroy) anymore.
+
 `MODELINSTANCE.isSubscribed()`
   * returns `true` or `false` accordingly if the instance is subscribed
 

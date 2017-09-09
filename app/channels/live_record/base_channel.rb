@@ -1,4 +1,4 @@
-class LiveRecord::BaseChannel < ApplicationCable::Channel
+class LiveRecord::BaseChannel < ActionCable::Channel::Base
 
   protected
 

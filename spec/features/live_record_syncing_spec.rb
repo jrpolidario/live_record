@@ -21,7 +21,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     expect(post3_title_td).to have_content(post3.title, wait: 10)
   end
 
-  scenario 'User sees live changes (destroy) post records', js: true do
+  scenario 'User sees live changes (destroy) of post records', js: true do
     visit '/posts'
 
     expect{find('td', text: post1.title, wait: 10)}.to_not raise_error
@@ -60,22 +60,25 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   end
 
   # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
-  scenario 'User sees live changes (create) of post records where specified "conditions" matched', js: true do
+  scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true do
     visit '/posts'
 
     Thread.new do
       sleep(5)
     end.join
 
-    post4 = create(:post, is_enabled: true)
-    post5 = create(:post, is_enabled: false)
+    post4 = create(:post, id: 98, is_enabled: true)
+    post5 = create(:post, id: 99, is_enabled: false)
 
-    expect{find('td', text: post4.title)}.to_not raise_error
-    expect{find('td', text: post5.title)}.to raise_error Capybara::ElementNotFound
+    wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined") }, becomes: -> (value) { value == false }
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined")).to be false
+
+    wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post5.id}] == undefined") }, becomes: -> (value) { value == true }
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post5.id}] == undefined")).to be true
   end
 
   # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
-  scenario 'User sees live changes (create) of post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
+  scenario 'JS-Client receives live new (create) post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
     visit '/posts'
 
     Thread.new do
@@ -88,12 +91,15 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     post4 = create(:post, is_enabled: true, content: 'somecontent')
     post5 = create(:post, is_enabled: true, content: 'contentisnotwhitelistedthereforewontbeconsidered')
 
-    expect{find('td', text: post4.title)}.to_not raise_error
-    expect{find('td', text: post5.title)}.to_not raise_error
+    wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined") }, becomes: -> (value) { value == false }
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined")).to be false
+    
+    wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post5.id}] == undefined") }, becomes: -> (value) { value == false }
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post5.id}] == undefined")).to be false
   end
 
   # see spec/internal/app/models/post.rb to view specified whitelisted attributes
-  scenario 'User sees new (create) post records having only the whitelisted authorised attributes', js: true do
+  scenario 'JS-Client receives live new (create) post records having only the whitelisted authorised attributes', js: true, focus: true do
     visit '/posts'
 
     Thread.new do
@@ -101,10 +107,9 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     end.join
 
     post4 = create(:post, is_enabled: true, title: 'sometitle', content: 'somecontent')
-
-    find('td', text: post4.title, wait: 10)
-
-    expect{find('td', text: post4.title)}.to_not raise_error
-    expect{find('td', text: post4.content)}.to raise_error Capybara::ElementNotFound
+    
+    wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined") }, becomes: -> (value) { value == false }
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].title()")).to eq post4.title
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].content()")).to eq nil
   end
 end

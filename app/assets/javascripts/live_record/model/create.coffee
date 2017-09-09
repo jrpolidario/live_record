@@ -50,6 +50,15 @@ LiveRecord.Model.create = (config) ->
     this.subscriptions.push(subscription)
     subscription
 
+  Model.unsubscribe = (subscription) ->
+    index = this.subscriptions.indexOf(subscription)
+    throw new Error('`subscription` argument does not exist in ' + this.modelName + ' subscriptions list') if index == -1
+
+    App.cable.subscriptions.remove(subscription)
+
+    this.subscriptions.splice(index, 1)
+    subscription
+
   Model.prototype.subscribe = ->
     return this.subscription if this.subscription != undefined
 
@@ -135,6 +144,8 @@ LiveRecord.Model.create = (config) ->
     this._callCallbacks('before:create', undefined)
 
     Model.all[this.attributes.id] = this
+    # because we do not know if this newly created object is statle, then we just set it to very long time ago, before we subscribe()
+    this._staleSince = (new Date(1900, 0, 1)).toISOString()
     this.subscribe()
 
     this._callCallbacks('after:create', undefined)

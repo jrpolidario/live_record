@@ -1,5 +1,6 @@
 ENV['RAILS_ENV'] ||= 'test'
 require 'spec_helper'
+Dir[__dir__ + '/helpers/*.rb'].each {|file| require file }
 
 ActiveRecord::Migration.maintain_test_schema!
 
@@ -9,6 +10,7 @@ Capybara.server = :puma
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
   config.include Capybara::DSL
+  config.include SpecHelpers::Wait
 
   config.use_transactional_fixtures = true
   config.infer_spec_type_from_file_location!

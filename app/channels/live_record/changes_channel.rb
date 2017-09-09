@@ -1,3 +1,6 @@
+# This channel streams changes (update/destroy) from records to connected clients, through ActiveRecord callbacks
+# This also supports syncing (old changes) when a client somehow got disconnected (i.e. network problems),
+# through a separate cache `live_record_updates` table.
 class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
 
   def subscribed

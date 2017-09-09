@@ -1,14 +1,5 @@
 <script>
   LiveRecord.helpers.loadRecords({ modelName: 'Post' });
-  
-  liveList = LiveRecord.plugins.LiveDOM.LiveList.create({
-    modelName: 'Post',
-    listContainer: function() { return $('tbody') },
-    sort: function(post1, post2) { return LiveRecord.helpers.spaceship(post1.created_at(), post2.created_at()) }
-    // TODO:
-    // fix link_to below
-  });
-
   LiveRecord.Model.all.Post.subscribe({ where: { is_enabled: true, content: 'somecontent' }});
 </script>
 <p id="notice"><%= notice %></p>
@@ -26,7 +17,7 @@
 
   <tbody>
     <% @posts.each do |post| %>
-      <tr <%= live_record_element(post) + live_record_destroyable(post) %>>
+      <tr <%= live_record_destroyable(post) %>>
         <td <%= live_record_updatable(post, :title) %>><%= post.title %></td>
         <td <%= live_record_updatable(post, :content) %>><%= post.content %></td>
         <td><%= link_to 'Show', post %></td>
