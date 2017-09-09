@@ -20,7 +20,10 @@
 
 ## Usage Example
 
-* say we have a `Book` model which has the following attributes: `title:string`, `author:text`, `is_enabled:boolean`
+* say we have a `Book` model which has the following attributes:
+  * `title:string`
+  * `author:text`
+  * `is_enabled:boolean`
 * on the JS client-side:
 
 ### Subscribing to Record Creation
