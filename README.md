@@ -101,7 +101,7 @@
   end
   ```
 
-* whenever a Book (or any other Model record that you specified) has been updated / destroyed, there exists an `after_update_commit` and an `after_destroy_commit` ActiveRecord callback that will broadcast changes to all subscribed JS clients
+* whenever a Book (or any other Model record that you specified) has been created / updated / destroyed, there exists an `after_create_commit`, `after_update_commit` and an `after_destroy_commit` ActiveRecord callback that will broadcast changes to all subscribed JS clients
 
 ## Setup
 * Add the following to your `Gemfile`:
