@@ -2,7 +2,8 @@
 
 ## About
 
-* Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable
+* Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable.
+* Also supports streaming newly created records to client-side JS.
 * Auto-updates DOM elements mapped to a record attribute, from changes. **(Optional LiveDOM Plugin)**
 * Automatically resyncs after client-side reconnection.
 
@@ -19,7 +20,26 @@
 
 ## Usage Example
 
+* say we have a `Book` model which has the following attributes: `title:string`, `author:text`, `is_enabled:boolean`
 * on the JS client-side:
+
+### Subscribing to Record Creation
+  ```js
+  // subscribe, and auto-receive newly created Book records from the Rails server
+  LiveRecord.Model.all.Book.subscribe()
+
+  // ...or only those which are enabled
+  // LiveRecord.Model.all.Book.subscribe({where: {is_enabled: true}})
+
+  // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
+  LiveRecord.Model.all.Book.addCallback('after:create', function() {
+    // let's say you have a code here that adds this new Book on the page 
+    // `this` refers to the Book record that has been created
+    console.log(this);
+  })
+  ```
+
+### Subscribing to Record Updates/Destroy
 
   ```js
   // instantiate a Book object
@@ -30,7 +50,11 @@
     created_at: '2017-08-02T12:39:49.238Z',
     updated_at: '2017-08-02T12:39:49.238Z'
   });
-  // store this Book object into the JS store
+
+  // ...or just simply pass the ID
+  // var book = new LiveRecord.Model.all.Book({id: 1});
+
+  // then store this Book object into the JS store
   book.create();
 
   // the store is accessible through
@@ -80,7 +104,7 @@
 * Add the following to your `Gemfile`:
 
   ```ruby
-  gem 'live_record', '~> 0.1.2'
+  gem 'live_record', '~> 0.2.0'
   ```
 
 * Run:
@@ -344,7 +368,23 @@
       * `after:destroy`: (Array of functions)
     * `plugins`: (Object)
       * `LiveDOM`: (Boolean)
-  * returns the newly create `MODEL`
+  * creates a `MODEL` and stores it into `LiveRecord.Model.all` array
+  * returns the newly created `MODEL`
+
+`MODEL`.subscribe(CONFIG)
+  * `CONFIG` (Object, Optional)
+    * `where`: (Object)
+      * `ATTRIBUTENAME`: (Any Type)
+    * `callbacks`: (Object)
+      * `on:connect`: (function Object)
+      * `on:disconnect`: (function Object)
+      * `before:create`: (function Object)
+      * `after:create`: (function Object)
+  * subscribes to the `PublicationsChannel`, which then automatically receives new records from the backend.
+  * you can also pass in `callbacks` (see above). These callbacks is only applicable to this subscription, and is independent of the Model and Instance callbacks.
+
+`MODEL`.unsubscribe(SUBSCRIPTION)
+  * unsubscribes to the `PublicationsChannel`, thereby will not be receiving new records anymore.
 
 `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
