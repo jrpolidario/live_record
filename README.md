@@ -104,19 +104,19 @@
 * whenever a Book (or any other Model record that you specified) has been created / updated / destroyed, there exists an `after_create_commit`, `after_update_commit` and an `after_destroy_commit` ActiveRecord callback that will broadcast changes to all subscribed JS clients
 
 ## Setup
-* Add the following to your `Gemfile`:
+1. Add the following to your `Gemfile`:
 
   ```ruby
   gem 'live_record', '~> 0.2.0'
   ```
 
-* Run:
+2. Run:
 
   ```bash
   bundle install
   ```
 
-* Install by running:
+3. Install by running:
 
   ```bash
   rails generate live_record:install
@@ -124,13 +124,13 @@
 
   > `rails generate live_record:install --live_dom=false` if you do not need the `LiveDOM` plugin; `--live_dom=true` by default
 
-* Run migration to create the `live_record_updates` table, which is going to be used for client reconnection resyncing:
+4. Run migration to create the `live_record_updates` table, which is going to be used for client reconnection resyncing:
 
   ```bash
   rake db:migrate
   ```
 
-* Update your **app/channels/application_cable/connection.rb**, and add `current_user` method, unless you already have it:
+5. Update your **app/channels/application_cable/connection.rb**, and add `current_user` method, unless you already have it:
 
   ```ruby
   module ApplicationCable
@@ -145,7 +145,7 @@
   end
   ```
 
-* Update your **model** files (only those you would want to be synced), and insert the following public method:
+6. Update your **model** files (only those you would want to be synced), and insert the following public method:
 
   > automatically updated if you use Rails scaffold or model generator
 
@@ -185,7 +185,7 @@
   end
   ```
 
-* For each Model you want to sync, insert the following in your Javascript files.
+7. For each Model you want to sync, insert the following in your Javascript files.
 
   > automatically updated if you use Rails scaffold or controller generator
 
@@ -262,7 +262,7 @@
       * `"forbidden"` - Current User is not authorized to sync record changes. Happens when Model's `live_record_whitelisted_attributes` method returns empty array.
       * `"bad_request"` - Happens when `LiveRecord.Model.create({modelName: 'INCORRECTMODELNAME'})`
 
-* Load the records into the JS Model-store through JSON REST (i.e.):
+8. Load the records into the JS Model-store through JSON REST (i.e.):
 
   ### Example 1 - Using Default Loader (Requires JQuery)
 
@@ -323,6 +323,27 @@
   })
   ```
 
+9. To automatically receive new Book records, you may subscribe:
+
+  ```js
+  // subscribe
+  subscription = LiveRecord.Model.all.Book.subscribe();
+
+  // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
+  // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled: true}});
+
+  // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
+  LiveRecord.Model.all.Book.addCallback('after:create', function() {
+    // let's say you have a code here that adds this new Book on the page 
+    // `this` refers to the Book record that has been created
+    console.log(this);
+  })
+
+  // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API below for information
+
+  // then unsubscribe, as you wish
+  LiveRecord.Model.all.Book.unsubscribe(subscription);
+  ```
 
 ## Plugins
 
