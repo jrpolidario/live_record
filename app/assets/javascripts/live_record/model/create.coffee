@@ -16,12 +16,7 @@ LiveRecord.Model.create = (config) ->
   Model.modelName = config.modelName
 
   Model.store = {}
-
-  Model.subscriptions = []
-
-  # ALL
-  # Model.all = ->
-  #   new LiveRecord.Model.Relation(Model)
+  
   Model.all = {}
 
   Model.subscriptions = []
