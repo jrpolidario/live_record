@@ -414,7 +414,7 @@
 
   #### List of Default Supported Query Operators
 
-    > the following list only applies if you are NOT using the `ransack` gem. If you need more complex queries, `ransack` is supported and so see Setup's step 9 above
+  > the following list only applies if you are NOT using the `ransack` gem. If you need more complex queries, `ransack` is supported and so see Setup's step 9 above
 
     * `eq` equals; i.e. `is_enabled_eq: true`
     * `not_eq` not equals; i.e. `is_enabled_not_eq: true`
