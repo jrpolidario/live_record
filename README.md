@@ -32,7 +32,7 @@
   LiveRecord.Model.all.Book.subscribe()
 
   // ...or only those which are enabled
-  // LiveRecord.Model.all.Book.subscribe({where: {is_enabled: true}})
+  // LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}})
 
   // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
   LiveRecord.Model.all.Book.addCallback('after:create', function() {
@@ -45,18 +45,12 @@
 ### Subscribing to Record Updates/Destroy
 
   ```js
-  // instantiate a Book object
-  var book = new LiveRecord.Model.all.Book({
-    id: 1,
-    title: 'Harry Potter',
-    author: 'J. K. Rowling',
-    created_at: '2017-08-02T12:39:49.238Z',
-    updated_at: '2017-08-02T12:39:49.238Z'
-  });
+  // instantiate a Book object (only requirement is you pass the ID so it can be referenced when updates/destroy happen)
+  var book = new LiveRecord.Model.all.Book({id: 1})
 
-  // ...or just simply pass the ID
-  // var book = new LiveRecord.Model.all.Book({id: 1});
-
+  // ...or you can also initialise with other attributes 
+  // var book = new LiveRecord.Model.all.Book({id: 1, title: 'Harry Potter', created_at: '2017-08-02T12:39:49.238Z'})
+  
   // then store this Book object into the JS store
   book.create();
 
@@ -65,7 +59,15 @@
 
   // all records in the JS store are automatically subscribed to the backend LiveRecordChannel, which meant syncing (update / destroy) changes from the backend
 
-  // you can add a callback that will be invoked whenever the Book object has been updated (see all supported callbacks further below)
+  // because the `book` above is already created in the store, you'll notice that it should automatically sync itself including all other possible whitelisted attributes
+  console.log(book.attributes);
+  // at this point then, console.log above will show the following on your browser console:
+  // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
+
+  // All attributes automatically updates itself so you'll be sure that the following line (for example) is always up-to-date
+  console.log(book.updated_at())
+
+  // you can also add a callback that will be invoked whenever the Book object has been updated (see all supported callbacks further below)
   book.addCallback('after:update', function() {
     // let's say you update the DOM elements here when the attributes have changed
     // `this` refers to the Book record that has been updated
@@ -330,7 +332,8 @@
     subscription = LiveRecord.Model.all.Book.subscribe();
 
     // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
-    // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled: true}});
+    // For the list of supported operators (like `..._eq`), see JS API `MODEL.subscribe(CONFIG)` below
+    // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}});
 
     // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
     LiveRecord.Model.all.Book.addCallback('after:create', function() {
@@ -339,7 +342,7 @@
       console.log(this);
     })
 
-    // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API below for information
+    // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.subscribe(CONFIG)` below for information
 
     // then unsubscribe, as you wish
     LiveRecord.Model.all.Book.unsubscribe(subscription);
@@ -377,7 +380,7 @@
 
 ## JS API
 
-`LiveRecord.Model.create(CONFIG)`
+### `LiveRecord.Model.create(CONFIG)`
   * `CONFIG` (Object)
     * `modelName`: (String, Required)
     * `callbacks`: (Object)
@@ -395,10 +398,10 @@
   * creates a `MODEL` and stores it into `LiveRecord.Model.all` array
   * returns the newly created `MODEL`
 
-`MODEL`.subscribe(CONFIG)
+### `MODEL`.subscribe(CONFIG)
   * `CONFIG` (Object, Optional)
     * `where`: (Object)
-      * `ATTRIBUTENAME`: (Any Type)
+      * `ATTRIBUTENAME_OPERATOR`: (Any Type)
     * `callbacks`: (Object)
       * `on:connect`: (function Object)
       * `on:disconnect`: (function Object)
@@ -406,55 +409,70 @@
       * `after:create`: (function Object)
   * subscribes to the `PublicationsChannel`, which then automatically receives new records from the backend.
   * you can also pass in `callbacks` (see above). These callbacks is only applicable to this subscription, and is independent of the Model and Instance callbacks.
+  * `ATTRIBUTENAME_OPERATOR` means something like (for example): `is_enabled_eq`, where `is_enabled` is the `ATTRIBUTENAME` and `eq` is the `OPERATOR`.
+    * you can have as many `ATTRIBUTENAME_OPERATOR` as you like, but keep in mind that the logic applied to them is "AND", and not "OR". For "OR" conditions, use `ransack`
 
-`MODEL`.unsubscribe(SUBSCRIPTION)
+  #### List of Default Supported Query Operators
+
+    > the following list only applies if you are NOT using the `ransack` gem. If you need more complex queries, `ransack` is supported and so see Setup's step 9 above
+
+    * `eq` equals; i.e. `is_enabled_eq: true`
+    * `not_eq` not equals; i.e. `is_enabled_not_eq: true`
+    * `lt` less than; i.e. `created_at_lt: '2017-12-291T13:47:59.238Z'`
+    * `lteq` less than or equal to; i.e. `created_at_lteq: '2017-12-291T13:47:59.238Z'`
+    * `gt` greater than; i.e. `created_at_gt: '2017-12-291T13:47:59.238Z'`
+    * `gteq` greater than or equal to; i.e. `created_at_gteq: '2017-12-291T13:47:59.238Z'`
+    * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
+    * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
+
+### `MODEL`.unsubscribe(SUBSCRIPTION)
   * unsubscribes to the `PublicationsChannel`, thereby will not be receiving new records anymore.
 
-`new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
+### `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
   * returns a `MODELINSTANCE` of the the Model having `ATTRIBUTES` attributes
 
-`MODELINSTANCE.modelName()`
+### `MODELINSTANCE.modelName()`
   * returns the model name (i.e. 'Book')
 
-`MODELINSTANCE.attributes`
+### `MODELINSTANCE.attributes`
   * the attributes object
 
-`MODELINSTANCE.ATTRIBUTENAME()`
+### `MODELINSTANCE.ATTRIBUTENAME()`
   * returns the attribute value of corresponding to `ATTRIBUTENAME`. (i.e. `bookInstance.id()`, `bookInstance.created_at()`)
 
-`MODELINSTANCE.subscribe()`
+### `MODELINSTANCE.subscribe()`
   * subscribes to the `LiveRecordChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
   * returns the `subscription` object (the ActionCable subscription object itself)
 
-`MODELINSTANCE.unsubscribe()`
+### `MODELINSTANCE.unsubscribe()`
   * unsubscribes to the `LiveRecordChannel`, thereby will not be receiving changes (updates/destroy) anymore.
 
-`MODELINSTANCE.isSubscribed()`
+### `MODELINSTANCE.isSubscribed()`
   * returns `true` or `false` accordingly if the instance is subscribed
 
-`MODELINSTANCE.subscription`
+### `MODELINSTANCE.subscription`
   * the `subscription` object (the ActionCable subscription object itself)
 
-`MODELINSTANCE.create()`
+### `MODELINSTANCE.create()`
   * stores the instance to the store, and then `subscribe()` to the `LiveRecordChannel` for syncing
   * returns the instance
 
-`MODELINSTANCE.update(ATTRIBUTES)`
+### `MODELINSTANCE.update(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
   * updates the attributes of the instance
   * returns the instance
 
-`MODELINSTANCE.destroy()`
+### `MODELINSTANCE.destroy()`
   * removes the instance from the store, and then `unsubscribe()`
   * returns the instance
 
-`MODELINSTANCE.addCallback(CALLBACKKEY, CALLBACKFUNCTION)`
+### `MODELINSTANCE.addCallback(CALLBACKKEY, CALLBACKFUNCTION)`
   * `CALLBACKKEY` (String) see supported callbacks above
   * `CALLBACKFUNCTION` (function Object)
   * returns the function Object if successfuly added, else returns `false` if callback already added
 
-`MODELINSTANCE.removeCallback(CALLBACKKEY, CALLBACKFUNCTION)`
+### `MODELINSTANCE.removeCallback(CALLBACKKEY, CALLBACKFUNCTION)`
   * `CALLBACKKEY` (String) see supported callbacks above
   * `CALLBACKFUNCTION` (function Object) the function callback that will be removed
   * returns the function Object if successfully removed, else returns `false` if callback is already removed
