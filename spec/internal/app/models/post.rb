@@ -8,10 +8,4 @@ class Post < ApplicationRecord
 	  # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
 	  [:title, :is_enabled, :created_at, :updated_at]
   end
-
-  # after_create :create_live_record_feed_items
-
-  # def create_live_record_feed_items
-  # 	live_record_feed_items.create!(feed_name: 'posts_path')
-  # end
 end
