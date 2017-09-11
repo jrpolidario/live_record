@@ -60,7 +60,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   end
 
   # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
-  scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true do
+  scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true, focus: true do
     visit '/posts'
 
     Thread.new do

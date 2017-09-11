@@ -106,9 +106,9 @@
 ## Setup
 1. Add the following to your `Gemfile`:
 
-  ```ruby
-  gem 'live_record', '~> 0.2.0'
-  ```
+    ```ruby
+    gem 'live_record', '~> 0.2.0'
+    ```
 
 2. Run:
 

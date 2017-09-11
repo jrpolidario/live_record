@@ -5,7 +5,7 @@ class LiveRecord::BaseChannel < ActionCable::Channel::Base
   def authorised_attributes(record, current_user)
     whitelisted_attributes = record.class.live_record_whitelisted_attributes(record, current_user)
     raise "#{record.model}.live_record_whitelisted_attributes should return an array" unless whitelisted_attributes.is_a? Array 
-    ([:id] + whitelisted_attributes).map(&:to_s)
+    ([:id] + whitelisted_attributes).map(&:to_s).to_set
   end
 
   def filtered_message(message, filters)
