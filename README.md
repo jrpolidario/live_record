@@ -348,6 +348,19 @@
     LiveRecord.Model.all.Book.unsubscribe(subscription);
     ```
 
+    ### Ransack Search Queries (Optional)
+  
+      * If you need more complex queries to pass into the `.subscribe`(where: { ... })` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
+      * For example you can then do:
+        ```js
+        // querying upon the `belongs_to :user`
+        subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled: true}});
+        
+        // or querying "OR" conditions
+        subscription = LiveRecord.Model.all.Book.subscribe({where: {title_eq: 'I am Batman', content_eq: 'I am Batman', m: 'or'}});
+        ```
+
+
 ## Plugins
 
 ### LiveDOM (Requires JQuery)
