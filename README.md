@@ -416,14 +416,14 @@
 
   > the following list only applies if you are NOT using the `ransack` gem. If you need more complex queries, `ransack` is supported and so see Setup's step 9 above
 
-    * `eq` equals; i.e. `is_enabled_eq: true`
-    * `not_eq` not equals; i.e. `is_enabled_not_eq: true`
-    * `lt` less than; i.e. `created_at_lt: '2017-12-291T13:47:59.238Z'`
-    * `lteq` less than or equal to; i.e. `created_at_lteq: '2017-12-291T13:47:59.238Z'`
-    * `gt` greater than; i.e. `created_at_gt: '2017-12-291T13:47:59.238Z'`
-    * `gteq` greater than or equal to; i.e. `created_at_gteq: '2017-12-291T13:47:59.238Z'`
-    * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
-    * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
+      * `eq` equals; i.e. `is_enabled_eq: true`
+      * `not_eq` not equals; i.e. `is_enabled_not_eq: true`
+      * `lt` less than; i.e. `created_at_lt: '2017-12-291T13:47:59.238Z'`
+      * `lteq` less than or equal to; i.e. `created_at_lteq: '2017-12-291T13:47:59.238Z'`
+      * `gt` greater than; i.e. `created_at_gt: '2017-12-291T13:47:59.238Z'`
+      * `gteq` greater than or equal to; i.e. `created_at_gteq: '2017-12-291T13:47:59.238Z'`
+      * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
+      * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
 
 ### `MODEL`.unsubscribe(SUBSCRIPTION)
   * unsubscribes to the `PublicationsChannel`, thereby will not be receiving new records anymore.
