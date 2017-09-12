@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.name        = 'live_record'
   s.version     = LiveRecord::VERSION
   s.summary     = 'Rails 5 ActionCable Live JS Objects and DOM Elements'
-  s.description = "Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable.\n Also supports streaming newly created records to client-side JS.\nAuto-updates DOM elements mapped to a record attribute, from changes.\nAutomatically resyncs after client-side reconnection."
+  s.description = "Auto-syncs records in client-side JS (through a Model DSL) from changes (updates/destroy) in the backend Rails server through ActionCable.\n Also supports streaming newly created records to client-side JS.\n Supports lost connection restreaming for both new records, and record-changes (updates/destroy).\n Auto-updates DOM elements mapped to a record attribute, from changes."
   s.authors     = ['Jules Roman B. Polidario']
   s.email       = 'jrpolidario@gmail.com'
   s.files       = `git ls-files`.split("\n")

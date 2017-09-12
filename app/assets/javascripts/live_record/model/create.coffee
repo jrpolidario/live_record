@@ -24,17 +24,23 @@ LiveRecord.Model.create = (config) ->
   Model.subscribe = (config) ->
     config || (config = {})
     config.callbacks || (config.callbacks = {})
-    # config.subscription.subchannel_id = window.location.pathname
 
     subscription = App.cable.subscriptions.create(
       {
         channel: 'LiveRecord::PublicationsChannel'
-        model_name: this.modelName
+        model_name: Model.modelName
         where: config.where
       },
-      connected: config.callbacks['on:connect']
 
-      disconnected: config.callbacks['on:disconnect']
+      connected: ->
+        if this.liveRecord._staleSince != undefined
+          @syncRecords()
+
+        config.callbacks['on:connect'].call(this) if config.callbacks['on:connect']
+
+      disconnected: ->
+        this.liveRecord._staleSince = (new Date()).toISOString() unless this.liveRecord._staleSince
+        config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
 
       received: (data) ->
         @onAction[data.action].call(this, data)
@@ -43,9 +49,23 @@ LiveRecord.Model.create = (config) ->
         create: (data) ->
           config.callbacks['before:create'].call(this, data) if config.callbacks['before:create']
           record = new Model(data.attributes)
-          record.create({render: config.render})
+          record.create()
           config.callbacks['after:create'].call(this, data) if config.callbacks['after:create']
+
+      syncRecords: ->
+        @perform(
+          'sync_records',
+          model_name: Model.modelName,
+          where: config.where,
+          stale_since: this.liveRecord._staleSince
+        )
+        this.liveRecord._staleSince = undefined
     )
+
+    subscription.liveRecord = {}
+    subscription.liveRecord.modelName = config.modelName
+    subscription.liveRecord.where = config.where
+    subscription.liveRecord.callbacks = config.callbacks
 
     this.subscriptions.push(subscription)
     subscription
@@ -69,6 +89,7 @@ LiveRecord.Model.create = (config) ->
         model_name: this.modelName()
         record_id: this.id()
       },
+
       record: ->
         return @_record if @_record
         identifier = JSON.parse(this.identifier)

@@ -11,7 +11,7 @@ class <%= class_name %> < <%= parent_class_name.classify %>
 <% end -%>
   
   include LiveRecord::Model::Callbacks
-  has_many :live_record_updates, as: :recordable
+  has_many :live_record_updates, as: :recordable, dependent: :destroy
 
   def self.live_record_whitelisted_attributes(<%= class_name.underscore %>, current_user)
 	  # Add attributes to this array that you would like current_user to have access to.

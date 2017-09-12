@@ -42,9 +42,9 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
           recordable_type: record.class.name,
           recordable_id: record.id
         ).where(
-          'created_at >= ?', DateTime.parse(data['stale_since']) - 1.minute
+          'created_at >= ?', DateTime.parse(data['stale_since']) - LiveRecord.configuration.sync_record_buffer_time
         ).order(id: :asc)
-
+        
         if live_record_update.exists?
           message = { 'action' => 'update', 'attributes' => record.attributes }
           response = filtered_message(message, authorised_attributes)

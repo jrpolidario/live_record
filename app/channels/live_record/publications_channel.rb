@@ -37,6 +37,40 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
     end
   end
 
+  def sync_records(data)
+    params = data.symbolize_keys
+    model_class = params[:model_name].safe_constantize
+
+    if model_class && model_class < ApplicationRecord
+
+      records = model_class.where(
+        'created_at >= ?', DateTime.parse(params[:stale_since]) - LiveRecord.configuration.sync_record_buffer_time
+      )
+
+      # we `transmmit` a message back to client for each matching record
+      records.find_each do |record|
+        # now we check each record if it is part of the "where" condition
+        current_authorised_attributes = authorised_attributes(record, current_user)
+
+        active_record_relation = SearchAdapters.mapped_active_record_relation(
+          model_class: model_class,
+          conditions_hash: params[:where].to_h,
+          current_user: current_user,
+          authorised_attributes: current_authorised_attributes
+        )
+
+        if active_record_relation.exists?(id: record)
+          message = { 'action' => 'create', 'attributes' => record.attributes }
+          response = filtered_message(message, current_authorised_attributes)
+          transmit response if response.present?
+        end
+      end
+    else
+      respond_with_error(:bad_request, 'Not a correct model name')
+      reject_subscription
+    end
+  end
+
   module SearchAdapters
     def self.mapped_active_record_relation(**args)
       # if ransack is loaded, use ransack
@@ -71,7 +105,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
           # to get attribute_name, we subtract the end part of the string with size of operator substring; i.e.: created_at_lteq -> created_at
           attribute_name = key[0..(-1 - operator.size - 1)]
 
-          if authorised_attributes.include? attribute_name
+          if authorised_attributes == :all || authorised_attributes.include?(attribute_name)
             case operator
             when 'eq'
               current_active_record_relation = current_active_record_relation.where(attribute_name => value)

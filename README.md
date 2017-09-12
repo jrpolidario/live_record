@@ -2,10 +2,10 @@
 
 ## About
 
-* Auto-syncs records in client-side JS (through a Model DSL) from changes in the backend Rails server through ActionCable.
-* Also supports streaming newly created records to client-side JS.
-* Auto-updates DOM elements mapped to a record attribute, from changes. **(Optional LiveDOM Plugin)**
-* Automatically resyncs after client-side reconnection.
+* Auto-syncs records in client-side JS (through a Model DSL) from changes (updates/destroy) in the backend Rails server through ActionCable.
+* Also supports streaming newly created records to client-side JS
+* Supports lost connection restreaming for both new records, and record-changes (updates/destroy).
+* Auto-updates DOM elements mapped to a record attribute, from changes (updates/destroy). **(Optional LiveDOM Plugin)**
 
 > `live_record` is intentionally designed for read-only one-way syncing from the backend server, and does not support pushing changes to the Rails server from the client-side JS. Updates from client-side then is intended to use the normal HTTP REST requests.
 
@@ -350,16 +350,59 @@
 
     ### Ransack Search Queries (Optional)
   
-      * If you need more complex queries to pass into the `.subscribe`(where: { ... })` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
+      * If you need more complex queries to pass into the `.subscribe(where: { ... })` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
       * For example you can then do:
         ```js
         // querying upon the `belongs_to :user`
         subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled: true}});
-        
+
         // or querying "OR" conditions
         subscription = LiveRecord.Model.all.Book.subscribe({where: {title_eq: 'I am Batman', content_eq: 'I am Batman', m: 'or'}});
         ```
 
+      #### Model File (w/ Ransack) Example
+
+      ```ruby
+      # app/models/book.rb
+      class Book < ApplicationRecord
+        include LiveRecord::Model::Callbacks
+        has_many :live_record_updates, as: :recordable
+
+        def self.live_record_whitelisted_attributes(book, current_user)
+          [:title, :is_enabled]
+        end
+
+        private
+
+        # see ransack gem for more details: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
+        # you can write your own columns here, but you may just simply allow ALL COLUMNS to be searchable, because the `live_record_whitelisted_attributes` method above will be also called anyway, and therefore just simply handle whitelisting there.
+        # therefore you can actually remove the whole `self.ransackable_attributes` below
+
+        # def self.ransackable_attributes(auth_object = nil)
+        #   LiveRecord passes the `current_user` into `auth_object` so...
+        #   live_record_whitelisted_attributes()
+        #   column_names + _ransackers.keys
+        # end
+      end
+      ```
+
+    ### Reconnection Streaming (when client got disconnected)
+
+    * Only requirement is that you should have a `created_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `created_at` with the following
+
+    ```bash
+    # this will create a file under db/migrate folder, then edit that file (see the ruby code below)
+    rails generate add_created_at_index_to_MODELNAME
+    ```
+
+    ```ruby
+    # db/migrate/2017**********_add_created_at_index_to_MODELNAME.rb
+    class AddCreatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0]
+      def change
+        add_index :TABLENAME, :created_at
+      end
+    end
+    ```
 
 ## Plugins
 
@@ -430,7 +473,7 @@
     > the following list only applies if you are NOT using the `ransack` gem. If you need more complex queries, `ransack` is supported and so see Setup's step 9 above
 
     * `eq` equals; i.e. `is_enabled_eq: true`
-    * `not_eq` not equals; i.e. `is_enabled_not_eq: true`
+    * `not_eq` not equals; i.e. `title_not_eq: 'Harry Potter'`
     * `lt` less than; i.e. `created_at_lt: '2017-12-291T13:47:59.238Z'`
     * `lteq` less than or equal to; i.e. `created_at_lteq: '2017-12-291T13:47:59.238Z'`
     * `gt` greater than; i.e. `created_at_gt: '2017-12-291T13:47:59.238Z'`
@@ -489,6 +532,15 @@
   * `CALLBACKKEY` (String) see supported callbacks above
   * `CALLBACKFUNCTION` (function Object) the function callback that will be removed
   * returns the function Object if successfully removed, else returns `false` if callback is already removed
+
+## FAQ
+* How to remove the view templates being overriden by LiveRecord when generating a controller or scaffold?
+  * amongst other things, `rails generate live_record:install` will override the default scaffold view templates: **show.html.erb** and **index.html.erb**; to revert back, just simply delete the following files (though you'll need to manually update or regenerate the view files that were already generated prior to deleting to the following files):
+    * **lib/templates/erb/scaffold/index.html.erb**
+    * **lib/templates/erb/scaffold/show.html.erb**
+
+* How to support more complex queries / "where" conditions when subscribing to new records creation?
+  * Please refer to [JS API's MODEL.subscribe(CONFIG) above ](#modelsubscribeconfig)
 
 ## TODOs
 * Change `feature` specs into `system` specs after [this rspec-rails pull request](https://github.com/rspec/rspec-rails/pull/1813) gets merged.
