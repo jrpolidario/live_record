@@ -4,10 +4,13 @@
 
 * Auto-syncs records in client-side JS (through a Model DSL) from changes (updates/destroy) in the backend Rails server through ActionCable.
 * Also supports streaming newly created records to client-side JS
-* Supports lost connection restreaming for both new records, and record-changes (updates/destroy).
+* Supports lost connection restreaming for both new records (create), and record-changes (updates/destroy).
 * Auto-updates DOM elements mapped to a record attribute, from changes (updates/destroy). **(Optional LiveDOM Plugin)**
 
 > `live_record` is intentionally designed for read-only one-way syncing from the backend server, and does not support pushing changes to the Rails server from the client-side JS. Updates from client-side then is intended to use the normal HTTP REST requests.
+
+> New Version 0.1!
+> See [Changelog below](#changelog)
 
 ## Requirements
 
@@ -376,11 +379,10 @@
 
         # see ransack gem for more details: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
         # you can write your own columns here, but you may just simply allow ALL COLUMNS to be searchable, because the `live_record_whitelisted_attributes` method above will be also called anyway, and therefore just simply handle whitelisting there.
-        # therefore you can actually remove the whole `self.ransackable_attributes` below
+        # therefore you can actually remove the whole `self.ransackable_attributes` method below
 
+        ## LiveRecord passes the `current_user` into `auth_object`, so you can access `current_user` inside below
         # def self.ransackable_attributes(auth_object = nil)
-        #   LiveRecord passes the `current_user` into `auth_object` so...
-        #   live_record_whitelisted_attributes()
         #   column_names + _ransackers.keys
         # end
       end
@@ -392,12 +394,12 @@
 
     ```bash
     # this will create a file under db/migrate folder, then edit that file (see the ruby code below)
-    rails generate add_created_at_index_to_MODELNAME
+    rails generate migration add_created_at_index_to_MODELNAME
     ```
 
     ```ruby
     # db/migrate/2017**********_add_created_at_index_to_MODELNAME.rb
-    class AddCreatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0]
+    class AddCreatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0] # or 5.1, etc
       def change
         add_index :TABLENAME, :created_at
       end
@@ -550,3 +552,7 @@
 
 ## License
 * MIT
+
+## Changelog
+* 0.1
+  * Ability to subscribe to new records (supports lost connection auto-restreaming)
