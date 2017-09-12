@@ -9,7 +9,7 @@
 
 > `live_record` is intentionally designed for read-only one-way syncing from the backend server, and does not support pushing changes to the Rails server from the client-side JS. Updates from client-side then is intended to use the normal HTTP REST requests.
 
-*New Version 0.1!*
+*New Version 0.2!*
 *See [Changelog below](#changelog)*
 
 ## Requirements
@@ -554,6 +554,6 @@
 * MIT
 
 ## Changelog
-* 0.1
+* 0.2
   * Ability to subscribe to new records (supports lost connection auto-restreaming)
     * See [9th step of Setup above](#setup)
