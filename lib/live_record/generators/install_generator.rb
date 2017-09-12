@@ -32,10 +32,15 @@ module LiveRecord
         migration_template 'create_live_record_updates.rb', 'db/migrate/create_live_record_updates.rb'
       end
 
-      def copy_live_record_channel_template
-        class_collisions 'LiveRecordChannel'
-        template 'live_record_channel.rb', File.join('app/channels', 'live_record_channel.rb')
-      end
+      # def copy_live_record_changes_channel_template
+      #   class_collisions 'LiveRecordChangesChannel'
+      #   template 'live_record_changes_channel.rb', File.join('app/channels', 'live_record_changes_channel.rb')
+      # end
+
+      # def copy_live_record_publication_channel_template
+      #   class_collisions 'LiveRecordPublicationChannel'
+      #   template 'live_record_publication_channel.rb', File.join('app/channels', 'live_record_publication_channel.rb')
+      # end
 
       def update_application_javascript
         in_root do
