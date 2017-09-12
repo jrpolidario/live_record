@@ -14,9 +14,9 @@ class <%= class_name %> < <%= parent_class_name.classify %>
   has_many :live_record_updates, as: :recordable, dependent: :destroy
 
   def self.live_record_whitelisted_attributes(<%= class_name.underscore %>, current_user)
-	  # Add attributes to this array that you would like current_user to have access to.
-	  # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
-	  []
+    # Add attributes to this array that you would like current_user to have access to.
+    # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
+    []
   end
 end
 <% end -%>
