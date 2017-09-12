@@ -556,3 +556,4 @@
 ## Changelog
 * 0.1
   * Ability to subscribe to new records (supports lost connection auto-restreaming)
+    * See [9th step of Setup above](#setup)
