@@ -438,6 +438,9 @@
 
 ## JS API
 
+### `LiveRecord.Model.all`
+  * Object of which properties are the models
+
 ### `LiveRecord.Model.create(CONFIG)`
   * `CONFIG` (Object)
     * `modelName`: (String, Required)
@@ -456,7 +459,10 @@
   * creates a `MODEL` and stores it into `LiveRecord.Model.all` array
   * returns the newly created `MODEL`
 
-### `MODEL`.subscribe(CONFIG)
+### `MODEL.all`
+  * Object of which properties are IDs of the records
+
+### `MODEL.subscribe(CONFIG)`
   * `CONFIG` (Object, Optional)
     * `where`: (Object)
       * `ATTRIBUTENAME_OPERATOR`: (Any Type)
@@ -483,7 +489,7 @@
     * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
     * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
 
-### `MODEL`.unsubscribe(SUBSCRIPTION)
+### `MODEL.unsubscribe(SUBSCRIPTION)`
   * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
 
 ### `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
@@ -524,6 +530,10 @@
 ### `MODELINSTANCE.destroy()`
   * removes the instance from the store, and then `unsubscribe()`
   * returns the instance
+
+### `MODELINSTANCE.changes`
+  * you can **ONLY** access this inside the function callback for `before:update` and `after:update`, and is automatically cleared after
+  * returns an object having the same format as [Rails's own `changes`](https://apidock.com/rails/ActiveModel/Dirty/changes)
 
 ### `MODELINSTANCE.addCallback(CALLBACKKEY, CALLBACKFUNCTION)`
   * `CALLBACKKEY` (String) see supported callbacks above

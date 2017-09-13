@@ -14,8 +14,6 @@ LiveRecord.Model.create = (config) ->
     this
 
   Model.modelName = config.modelName
-
-  Model.store = {}
   
   Model.all = {}
 
@@ -120,7 +118,9 @@ LiveRecord.Model.create = (config) ->
       # handler for received() callback above
       onAction:
         update: (data) ->
+          @record()._setChangesFrom(data.attributes)
           @record().update(data.attributes)
+          @record()._unsetChanges()
 
         destroy: (data) ->
           @record().destroy()
@@ -241,6 +241,16 @@ LiveRecord.Model.create = (config) ->
     # call instance callbacks
     for callback in this._callbacks[callbackKey]
       callback.apply(this, args)
+
+  Model.prototype._setChangesFrom = (attributes) ->
+    this.changes = {}
+
+    for attributeName, attributeValue of attributes
+      unless this.attributes[attributeName] && this.attributes[attributeName] == attributeValue
+        this.changes[attributeName] = [this.attributes[attributeName], attributeValue]
+
+  Model.prototype._unsetChanges = () ->
+    delete this['changes']
 
   # AFTER MODEL INITIALISATION
 
