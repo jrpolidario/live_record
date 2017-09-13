@@ -72,7 +72,7 @@
     // `this` refers to the Book record that has been updated
 
     console.log(this.attributes);
-    // this book record should be updated with all other possible whitelisted attributes; thus console.log above would output below
+    // this book record should have been updated with all other possible whitelisted attributes; thus console.log above would output below
     // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
 
     console.log(this.changed)
