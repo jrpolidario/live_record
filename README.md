@@ -569,6 +569,8 @@
 * MIT
 
 ## Changelog
-* 0.2
+* 0.2.1
+  * you can now access what attributes have changed; see [`MODEL.changes`](#modelinstancechanges) above.
+* 0.2.0
   * Ability to subscribe to new records (supports lost connection auto-restreaming)
     * See [9th step of Setup above](#setup)
