@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/jrpolidario/live_record.svg?branch=master)](https://travis-ci.org/jrpolidario/live_record)
+[![Gem Version](https://badge.fury.io/rb/live_record.svg)](https://badge.fury.io/rb/live_record)
 
 ## About
 
