@@ -110,7 +110,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.0'
+    gem 'live_record', '~> 0.2.1'
     ```
 
 2. Run:
