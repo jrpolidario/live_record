@@ -465,7 +465,7 @@
       * `on:disconnect`: (function Object)
       * `before:create`: (function Object)
       * `after:create`: (function Object)
-  * subscribes to the `PublicationsChannel`, which then automatically receives new records from the backend.
+  * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
   * you can also pass in `callbacks` (see above). These callbacks is only applicable to this subscription, and is independent of the Model and Instance callbacks.
   * `ATTRIBUTENAME_OPERATOR` means something like (for example): `is_enabled_eq`, where `is_enabled` is the `ATTRIBUTENAME` and `eq` is the `OPERATOR`.
     * you can have as many `ATTRIBUTENAME_OPERATOR` as you like, but keep in mind that the logic applied to them is "AND", and not "OR". For "OR" conditions, use `ransack`
@@ -484,7 +484,7 @@
     * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
 
 ### `MODEL`.unsubscribe(SUBSCRIPTION)
-  * unsubscribes to the `PublicationsChannel`, thereby will not be receiving new records anymore.
+  * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
 
 ### `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
