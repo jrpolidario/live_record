@@ -60,7 +60,7 @@
   // the store is accessible through
   LiveRecord.Model.all.Book.all;
 
-  // all records in the JS store are automatically subscribed to the backend LiveRecordChannel, which meant syncing (update / destroy) changes from the backend
+  // all records in the JS store are automatically subscribed to the backend LiveRecord::ChangesChannel, which meant syncing (update / destroy) changes from the backend
 
   // All attributes automatically updates itself so you'll be sure that the following line (for example) is always up-to-date
   console.log(book.updated_at())
@@ -499,11 +499,11 @@
   * returns the attribute value of corresponding to `ATTRIBUTENAME`. (i.e. `bookInstance.id()`, `bookInstance.created_at()`)
 
 ### `MODELINSTANCE.subscribe()`
-  * subscribes to the `LiveRecordChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
+  * subscribes to the `LiveRecord::ChangesChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
   * returns the `subscription` object (the ActionCable subscription object itself)
 
 ### `MODELINSTANCE.unsubscribe()`
-  * unsubscribes to the `LiveRecordChannel`, thereby will not be receiving changes (updates/destroy) anymore.
+  * unsubscribes to the `LiveRecord::ChangesChannel`, thereby will not be receiving changes (updates/destroy) anymore.
 
 ### `MODELINSTANCE.isSubscribed()`
   * returns `true` or `false` accordingly if the instance is subscribed
@@ -512,7 +512,7 @@
   * the `subscription` object (the ActionCable subscription object itself)
 
 ### `MODELINSTANCE.create()`
-  * stores the instance to the store, and then `subscribe()` to the `LiveRecordChannel` for syncing
+  * stores the instance to the store, and then `subscribe()` to the `LiveRecord::ChangesChannel` for syncing
   * returns the instance
 
 ### `MODELINSTANCE.update(ATTRIBUTES)`

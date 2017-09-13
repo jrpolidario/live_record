@@ -122,7 +122,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
       Thread.new do
         sleep(2)
 
-        # temporarily stop all current publication_channel connections
+        # temporarily stop all current changes_channel connections
         ObjectSpace.each_object(LiveRecord::ChangesChannel) do |changes_channel|
           changes_channel.connection.close
         end
