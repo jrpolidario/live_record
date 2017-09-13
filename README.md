@@ -75,7 +75,7 @@
     // this book record should have been updated with all other possible whitelisted attributes; thus console.log above would output below
     // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
 
-    console.log(this.changed)
+    console.log(this.changes)
     // from above, you can also access what has changed, and would have an example output below
     // {title: ['Harry Potter', 'New Title'], updated_at: ['2017-08-02T12:39:49.238Z', 2017-08-02T13:00:00.047Z]}
   });
@@ -538,6 +538,7 @@
 ### `MODELINSTANCE.changes`
   * you can **ONLY** access this inside the function callback for `before:update` and `after:update`, and is automatically cleared after
   * returns an object having the same format as [Rails's own `changes`](https://apidock.com/rails/ActiveModel/Dirty/changes)
+  * i.e. `{title: ['Harry Potter', 'New Title'], updated_at: ['2017-08-02T12:39:49.238Z', 2017-08-02T13:00:00.047Z]}`
 
 ### `MODELINSTANCE.addCallback(CALLBACKKEY, CALLBACKFUNCTION)`
   * `CALLBACKKEY` (String) see supported callbacks above
