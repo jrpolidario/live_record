@@ -25,7 +25,7 @@
 
 * say we have a `Book` model which has the following attributes:
   * `title:string`
-  * `author:text`
+  * `author:string`
   * `is_enabled:boolean`
 * on the JS client-side:
 
@@ -62,19 +62,15 @@
 
   // all records in the JS store are automatically subscribed to the backend LiveRecordChannel, which meant syncing (update / destroy) changes from the backend
 
-  // because the `book` above is already created in the store, you'll notice that it should automatically sync itself including all other possible whitelisted attributes
-  console.log(book.attributes);
-  // at this point then, console.log above will show the following on your browser console:
-  // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
-
   // All attributes automatically updates itself so you'll be sure that the following line (for example) is always up-to-date
   console.log(book.updated_at())
 
   // you can also add a callback that will be invoked whenever the Book object has been updated (see all supported callbacks further below)
   book.addCallback('after:update', function() {
-    // let's say you update the DOM elements here when the attributes have changed
     // `this` refers to the Book record that has been updated
-    console.log(this);
+    console.log(this.attributes);
+    // this book record should be updated with all other possible whitelisted attributes; thus console.log above would output below
+    // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
   });
 
   // or you can add a Model-wide callback that will be invoked whenever ANY Book object has been updated
@@ -91,6 +87,7 @@
   # app/models/book.rb
   class Book < ApplicationRecord
     include LiveRecord::Model::Callbacks
+    has_many :live_record_updates, as: :recordable, dependent: :destroy
 
     def self.live_record_whitelisted_attributes(book, current_user)
       # Add attributes to this array that you would like `current_user` to have access to when syncing this particular `book`
@@ -160,6 +157,7 @@
     # app/models/book.rb (example 1)
     class Book < ApplicationRecord
       include LiveRecord::Model::Callbacks
+      has_many :live_record_updates, as: :recordable, dependent: :destroy
 
       def self.live_record_whitelisted_attributes(book, current_user)
         # Add attributes to this array that you would like current_user to have access to when syncing.
@@ -175,6 +173,7 @@
     # app/models/book.rb (example 1)
     class Book < ApplicationRecord
       include LiveRecord::Model::Callbacks
+      has_many :live_record_updates, as: :recordable, dependent: :destroy
       
       def self.live_record_whitelisted_attributes(book, current_user)
         # Notice that from above, you also have access to `book` (the record currently requested by the client to be synced),
@@ -369,7 +368,7 @@
       # app/models/book.rb
       class Book < ApplicationRecord
         include LiveRecord::Model::Callbacks
-        has_many :live_record_updates, as: :recordable
+        has_many :live_record_updates, as: :recordable, dependent: :destroy
 
         def self.live_record_whitelisted_attributes(book, current_user)
           [:title, :is_enabled]
