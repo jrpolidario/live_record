@@ -67,17 +67,21 @@
   console.log(book.updated_at())
 
   // you can also add a callback that will be invoked whenever the Book object has been updated (see all supported callbacks further below)
+  // i.e. you might want to update DOM elements when the attributes have changed
   book.addCallback('after:update', function() {
     // `this` refers to the Book record that has been updated
+
     console.log(this.attributes);
     // this book record should be updated with all other possible whitelisted attributes; thus console.log above would output below
     // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
+
+    console.log(this.changed)
+    // from above, you can also access what has changed, and would have an example output below
+    // {title: ['Harry Potter', 'New Title'], updated_at: ['2017-08-02T12:39:49.238Z', 2017-08-02T13:00:00.047Z]}
   });
 
   // or you can add a Model-wide callback that will be invoked whenever ANY Book object has been updated
   LiveRecord.Model.all.Book.addCallback('after:update', function() {
-    // let's say you update the DOM elements here when the attributes have changed
-    // `this` refers to the Book record that has been updated
     console.log(this);
   })
   ```
