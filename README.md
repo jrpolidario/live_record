@@ -552,7 +552,7 @@
 
 ## FAQ
 * How to remove the view templates being overriden by LiveRecord when generating a controller or scaffold?
-  * amongst other things, `rails generate live_record:install` will override the default scaffold view templates: **show.html.erb** and **index.html.erb**; to revert back, just simply delete the following files (though you'll need to manually update or regenerate the view files that were already generated prior to deleting to the following files):
+  * amongst other things, `rails generate live_record:install` will override the default scaffold view templates: **show.html.erb** and **index.html.erb**; to revert back, just simply delete the following files (though you'll need to manually update or regenerate the view files that were already generated prior to deleting the following files):
     * **lib/templates/erb/scaffold/index.html.erb**
     * **lib/templates/erb/scaffold/show.html.erb**
 
