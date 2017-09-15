@@ -159,7 +159,7 @@
     ### Example 1 - Simple Usage
 
     ```ruby
-    # app/models/book.rb (example 1)
+    # app/models/book.rb
     class Book < ApplicationRecord
       include LiveRecord::Model::Callbacks
       has_many :live_record_updates, as: :recordable, dependent: :destroy
@@ -175,7 +175,7 @@
     ### Example 2 - Advanced Usage
 
     ```ruby
-    # app/models/book.rb (example 1)
+    # app/models/book.rb
     class Book < ApplicationRecord
       include LiveRecord::Model::Callbacks
       has_many :live_record_updates, as: :recordable, dependent: :destroy
@@ -273,6 +273,9 @@
 
 8. Load the records into the JS Model-store through JSON REST (i.e.):
 
+    * Any record created/loaded in the JS-store is automatically synced whenever it is updated from the backend
+    * When reconnected after losing connection, the records in the store are synced automatically.
+
     ### Example 1 - Using Default Loader (Requires JQuery)
 
     > Your controller must also support responding with JSON in addition to HTML. If you used scaffold or controller generator, this should already work immediately.
@@ -295,7 +298,7 @@
     ```
 
     ```html
-    <!-- app/views/posts/index.html.erb -->
+    <!-- app/views/books/index.html.erb -->
     <script>
       // You may also pass in a callback for synchronous logic
       LiveRecord.helpers.loadRecords({
@@ -336,7 +339,7 @@
 
     ```js
     // subscribe
-    subscription = LiveRecord.Model.all.Book.subscribe();
+    var subscription = LiveRecord.Model.all.Book.subscribe();
 
     // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
     // For the list of supported operators (like `..._eq`), see JS API `MODEL.subscribe(CONFIG)` below
@@ -351,7 +354,7 @@
 
     // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.subscribe(CONFIG)` below for information
 
-    // then unsubscribe, as you wish
+    // you may also want to unsubscribe as you wish
     LiveRecord.Model.all.Book.unsubscribe(subscription);
     ```
 
@@ -361,7 +364,7 @@
       * For example you can then do:
         ```js
         // querying upon the `belongs_to :user`
-        subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled: true}});
+        subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled_eq: true}});
 
         // or querying "OR" conditions
         subscription = LiveRecord.Model.all.Book.subscribe({where: {title_eq: 'I am Batman', content_eq: 'I am Batman', m: 'or'}});
@@ -392,9 +395,9 @@
       end
       ```
 
-    ### Reconnection Streaming (when client got disconnected)
+    ### Reconnection Streaming For New Records (when client got disconnected)
 
-    * Only requirement is that you should have a `created_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `created_at` with the following
+    * To be able to stream newly created records upon reconnection, the only requirement is that you should have a `created_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `created_at` with the following
 
     ```bash
     # this will create a file under db/migrate folder, then edit that file (see the ruby code below)
@@ -476,7 +479,7 @@
       * `before:create`: (function Object)
       * `after:create`: (function Object)
   * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
-  * you can also pass in `callbacks` (see above). These callbacks is only applicable to this subscription, and is independent of the Model and Instance callbacks.
+  * you can also pass in `callbacks` (see above). These callbacks are only applicable to this subscription, and is independent of the Model and Instance callbacks.
   * `ATTRIBUTENAME_OPERATOR` means something like (for example): `is_enabled_eq`, where `is_enabled` is the `ATTRIBUTENAME` and `eq` is the `OPERATOR`.
     * you can have as many `ATTRIBUTENAME_OPERATOR` as you like, but keep in mind that the logic applied to them is "AND", and not "OR". For "OR" conditions, use `ransack`
 
