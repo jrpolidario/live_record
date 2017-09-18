@@ -40,7 +40,7 @@
 
   // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
   LiveRecord.Model.all.Book.addCallback('after:create', function() {
-    // let's say you have a code here that adds this new Book on the page 
+    // let's say you have a code here that adds this new Book on the page
     // `this` refers to the Book record that has been created
     console.log(this);
   })
@@ -52,9 +52,9 @@
   // instantiate a Book object (only requirement is you pass the ID so it can be referenced when updates/destroy happen)
   var book = new LiveRecord.Model.all.Book({id: 1})
 
-  // ...or you can also initialise with other attributes 
+  // ...or you can also initialise with other attributes
   // var book = new LiveRecord.Model.all.Book({id: 1, title: 'Harry Potter', created_at: '2017-08-02T12:39:49.238Z'})
-  
+
   // then store this Book object into the JS store
   book.create();
 
@@ -114,7 +114,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.1'
+    gem 'live_record', '~> 0.2.2'
     ```
 
 2. Run:
@@ -179,7 +179,7 @@
     class Book < ApplicationRecord
       include LiveRecord::Model::Callbacks
       has_many :live_record_updates, as: :recordable, dependent: :destroy
-      
+
       def self.live_record_whitelisted_attributes(book, current_user)
         # Notice that from above, you also have access to `book` (the record currently requested by the client to be synced),
         # and the `current_user`, the current user who is trying to sync the `book` record.
@@ -292,7 +292,7 @@
     ```html
     <!-- app/views/books/index.html.erb -->
     <script>
-      // `loadRecords` you may also specify a URL to loadRecords (`url` defaults to `window.location.href` which is the current page) 
+      // `loadRecords` you may also specify a URL to loadRecords (`url` defaults to `window.location.href` which is the current page)
       LiveRecord.helpers.loadRecords({modelName: 'Book', url: '/some/url/that/returns_books_as_a_json'})
     </script>
     ```
@@ -347,7 +347,7 @@
 
     // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
     LiveRecord.Model.all.Book.addCallback('after:create', function() {
-      // let's say you have a code here that adds this new Book on the page 
+      // let's say you have a code here that adds this new Book on the page
       // `this` refers to the Book record that has been created
       console.log(this);
     })
@@ -359,7 +359,7 @@
     ```
 
     ### Ransack Search Queries (Optional)
-  
+
       * If you need more complex queries to pass into the `.subscribe(where: { ... })` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
       * For example you can then do:
         ```js
@@ -572,6 +572,8 @@
 * MIT
 
 ## Changelog
+* 0.2.2
+  * minor fix: "new records" subscription: `.modelName` was not being referenced properly, but should have not affected any functionalities.
 * 0.2.1
   * you can now access what attributes have changed; see [`MODEL.changes`](#modelinstancechanges) above.
 * 0.2.0
