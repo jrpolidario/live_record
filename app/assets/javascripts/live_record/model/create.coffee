@@ -14,7 +14,7 @@ LiveRecord.Model.create = (config) ->
     this
 
   Model.modelName = config.modelName
-  
+
   Model.all = {}
 
   Model.subscriptions = []
@@ -61,7 +61,7 @@ LiveRecord.Model.create = (config) ->
     )
 
     subscription.liveRecord = {}
-    subscription.liveRecord.modelName = config.modelName
+    subscription.liveRecord.modelName = Model.modelName
     subscription.liveRecord.where = config.where
     subscription.liveRecord.callbacks = config.callbacks
 
@@ -206,7 +206,7 @@ LiveRecord.Model.create = (config) ->
     'before:destroy': [],
     'after:destroy': []
   }
-  
+
   Model.prototype._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
