@@ -598,10 +598,10 @@
 ## Changelog
 * 0.2.3
   * IMPORTANT! renamed callback from `on:response_error` to `on:responseError` for conformity. So please update your code accordingly.
-  * added associations:
+  * added [associations](#example-2---model--callbacks--associations):
     * `hasMany` which allows you to do `bookInstance.reviews()`
     * `belongsTo` which allows you to do `bookInstance.user()`
-  * fixed `loadRecords()` throwing an error when there is no response 
+  * fixed `loadRecords()` throwing an error when there is no response
 * 0.2.2
   * minor fix: "new records" subscription: `.modelName` was not being referenced properly, but should have not affected any functionalities.
 * 0.2.1
