@@ -7,7 +7,7 @@ LiveRecord.helpers.loadRecords = (args) ->
   $.getJSON(
     args['url']
   ).done(
-    (data) -> 
+    (data) ->
       record_or_records = undefined
 
       # Array JSON
@@ -23,7 +23,7 @@ LiveRecord.helpers.loadRecords = (args) ->
         record_or_records = records
 
       # Single-Record JSON
-      else
+      else if data
         record_attributes = data
         record = new LiveRecord.Model.all[args['modelName']](record_attributes)
         record.create()

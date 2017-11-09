@@ -15,13 +15,43 @@ LiveRecord.Model.create = (config) ->
 
   Model.modelName = config.modelName
 
+  Model.associations =
+    hasMany: config.hasMany
+    belongsTo: config.belongsTo
+
+  # getting has_many association records
+  for associationName, associationConfig of Model.associations.hasMany
+    Model.prototype[associationName] = ->
+      self = this
+      associatedModel = LiveRecord.Model.all[associationConfig.modelName]
+      throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
+
+      # TODO: speed up searching for associated records, or use cache-maps
+      associatedRecords = []
+
+      for id, record of associatedModel.all
+        isAssociated = record[associationConfig.foreignKey]() == self.id()
+        associatedRecords.push(record) if isAssociated
+
+      associatedRecords
+
+  # getting belongs_to association record
+  for associationName, associationConfig of Model.associations.belongsTo
+    Model.prototype[associationName] = ->
+      self = this
+      associatedModel = LiveRecord.Model.all[associationConfig.modelName]
+      throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
+
+      belongsToID = self[associationConfig.foreignKey]()
+      associatedModel.all[belongsToID]
+
   Model.all = {}
 
   Model.subscriptions = []
 
   Model.subscribe = (config) ->
-    config || (config = {})
-    config.callbacks || (config.callbacks = {})
+    config ||= {}
+    config.callbacks ||= {}
 
     subscription = App.cable.subscriptions.create(
       {
@@ -110,7 +140,7 @@ LiveRecord.Model.create = (config) ->
         if data.error
           @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
           @onError[data.error.code].call(this, data)
-          @record()._callCallbacks('on:response_error', [data.error.code])
+          @record()._callCallbacks('on:responseError', [data.error.code])
           delete @record()['subscription']
         else
           @onAction[data.action].call(this, data)
@@ -198,7 +228,7 @@ LiveRecord.Model.create = (config) ->
   Model._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
-    'on:response_error': [],
+    'on:responseError': [],
     'before:create': [],
     'after:create': [],
     'before:update': [],
@@ -210,7 +240,7 @@ LiveRecord.Model.create = (config) ->
   Model.prototype._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
-    'on:response_error': [],
+    'on:responseError': [],
     'before:create': [],
     'after:create': [],
     'before:update': [],

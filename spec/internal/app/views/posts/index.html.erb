@@ -1,5 +1,6 @@
 <script>
   LiveRecord.helpers.loadRecords({ modelName: 'Post' });
+  LiveRecord.helpers.loadRecords({ modelName: 'User', url: '<%= j users_path %>' });
   LiveRecord.Model.all.Post.subscribe({ where: { is_enabled_eq: true, content_eq: 'somecontent' }});
 </script>
 <p id="notice"><%= notice %></p>

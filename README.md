@@ -15,8 +15,8 @@
 
 ## Requirements
 
-* **>= Ruby 2.2.2**
-* **>= Rails 5.0**
+* **Ruby >= 2.2.2**
+* **Rails >= 5.0, < 5.2**
 
 ## Demo
 
@@ -114,7 +114,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.2'
+    gem 'live_record', '~> 0.2.3'
     ```
 
 2. Run:
@@ -212,13 +212,23 @@
     )
     ```
 
-    ### Example 2 - Model + Callbacks
+    ### Example 2 - Model + Callbacks + Associations
 
     ```js
     // app/assets/javascripts/books.js
     LiveRecord.Model.create(
       {
         modelName: 'Book',
+        belongsTo: {
+          // allows you to do `bookInstance.user()` and `bookInstance.library()`
+          user: { foreignKey: 'user_id', modelName: 'User' },
+          library: { foreignKey: 'library_id', modelName: 'Library' }
+        },
+        hasMany: {
+          // allows you to do `bookInstance.pages()` and `bookInstance.bookReviews()`
+          pages: { foreignKey: 'book_id', modelName: 'Page' },
+          bookReviews: { foreignKey: 'book_id', modelName: 'Review' }
+        },
         callbacks: {
           'on:connect': [
             function() {
@@ -238,7 +248,7 @@
       #### Model Callbacks supported:
       * `on:connect`
       * `on:disconnect`
-      * `on:response_error`
+      * `on:responseError`
       * `before:create`
       * `after:create`
       * `before:update`
@@ -248,7 +258,7 @@
 
       > Each callback should map to an array of functions
 
-      * `on:response_error` supports a function argument: The "Error Code". i.e.
+      * `on:responseError` supports a function argument: The "Error Code". i.e.
 
         ### Example 3 - Handling Response Error
 
@@ -257,7 +267,7 @@
           {
             modelName: 'Book',
             callbacks: {
-              'on:response_error': [
+              'on:responseError': [
                 function(errorCode) {
                   console.log(errorCode); // errorCode is a string, representing the type of error. See Response Error Codes below:
                 }
@@ -451,10 +461,18 @@
 ### `LiveRecord.Model.create(CONFIG)`
   * `CONFIG` (Object)
     * `modelName`: (String, Required)
+    * `belongsTo`: (Object)
+      * `ASSOCIATIONNAME`: (Object)
+        * `foreignKey`: (String)
+        * `modelName`: (String)
+    * `hasMany`: (Object)
+      * `ASSOCIATIONNAME`: (Object)
+        * `foreignKey`: (String)
+        * `modelName`: (String)
     * `callbacks`: (Object)
       * `on:connect`: (Array of functions)
       * `on:disconnect`: (Array of functions)
-      * `on:response_error`: (Array of functions; function argument = ERROR_CODE (String))
+      * `on:responseError`: (Array of functions; function argument = ERROR_CODE (String))
       * `before:create`: (Array of functions)
       * `after:create`: (Array of functions)
       * `before:update`: (Array of functions)
@@ -464,6 +482,7 @@
     * `plugins`: (Object)
       * `LiveDOM`: (Boolean)
   * creates a `MODEL` and stores it into `LiveRecord.Model.all` array
+  * `hasMany` and `belongsTo` `modelName` above should be a valid defined `LiveRecord.Model`
   * returns the newly created `MODEL`
 
 ### `MODEL.all`
@@ -511,6 +530,11 @@
 
 ### `MODELINSTANCE.ATTRIBUTENAME()`
   * returns the attribute value of corresponding to `ATTRIBUTENAME`. (i.e. `bookInstance.id()`, `bookInstance.created_at()`)
+
+### `MODELINSTANCE.ASSOCIATIONAME()`
+  * if association is "has many", then returns an array of associated records (if any exists in current store)
+  * if association is "belongs to", then returns the record (if exists in current store)
+  * (i.e. `bookInstance.user()`, `bookInstance.reviews()`)
 
 ### `MODELINSTANCE.subscribe()`
   * subscribes to the `LiveRecord::ChangesChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
@@ -572,6 +596,12 @@
 * MIT
 
 ## Changelog
+* 0.2.3
+  * IMPORTANT! renamed callback from `on:response_error` to `on:responseError` for conformity. So please update your code accordingly.
+  * added associations:
+    * `hasMany` which allows you to do `bookInstance.reviews()`
+    * `belongsTo` which allows you to do `bookInstance.user()`
+  * fixed `loadRecords()` throwing an error when there is no response 
 * 0.2.2
   * minor fix: "new records" subscription: `.modelName` was not being referenced properly, but should have not affected any functionalities.
 * 0.2.1
