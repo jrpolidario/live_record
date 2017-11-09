@@ -9,7 +9,7 @@ LiveRecord.Model.create(
 
     ## More configurations below. See https://github.com/jrpolidario/live_record#example-1---model
     # belongsTo: {
-    #  user: { foreignKey: 'user_id', modelName: 'User' }
+    #   user: { foreignKey: 'user_id', modelName: 'User' }
     # },
     # hasMany: {
     #   books: { foreignKey: '<%= singular_table_name %>_id', modelName: 'Book' }
