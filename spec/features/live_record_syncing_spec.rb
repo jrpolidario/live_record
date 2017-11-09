@@ -62,6 +62,38 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     expect(post3_content_td).to_not have_content('post3newcontent')
   end
 
+  scenario 'JS-Client can access Model associations record objects in its current store', js: true do
+    visit '/posts'
+
+    # let's wait for all records first before checking correct associations
+    wait before: -> { evaluate_script('Object.keys( LiveRecord.Model.all.User.all ).length') }, becomes: -> (value) { value == users.size }, duration: 10.seconds
+    expect(evaluate_script('Object.keys( LiveRecord.Model.all.User.all ).length')).to eq users.size
+    wait before: -> { evaluate_script('Object.keys( LiveRecord.Model.all.Post.all ).length') }, becomes: -> (value) { value == posts.size }, duration: 10.seconds
+    expect(evaluate_script('Object.keys( LiveRecord.Model.all.Post.all ).length')).to eq posts.size
+
+    # users should have correct associated posts
+    expect(evaluate_script(
+      <<-eos
+      LiveRecord.Model.all.User.all[#{user1.id}].posts().map(
+        function(post) { return post.id() }
+      )
+      eos
+    )).to eq user1.posts.pluck(:id)
+
+    expect(evaluate_script(
+      <<-eos
+      LiveRecord.Model.all.User.all[#{user2.id}].posts().map(
+        function(post) { return post.id() }
+      )
+      eos
+    )).to eq user2.posts.pluck(:id)
+
+    # posts should belong to correct associated user
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post1.id}].user().id()")).to eq post1.user.id
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post2.id}].user().id()")).to eq post2.user.id
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post3.id}].user()")).to eq nil
+  end
+
   # see spec/internal/app/views/posts/index.html.erb to see the subscribe "conditions"
   scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true do
     visit '/posts'
@@ -182,38 +214,6 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
       wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined") }, becomes: -> (value) { value == false }
       expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined")).to be true
-    end
-
-    scenario 'JS-Client can access Model associations record objects in its current store', js: true do
-      visit '/posts'
-
-      # let's wait for all records first before checking correct associations
-      wait before: -> { evaluate_script('Object.keys( LiveRecord.Model.all.User.all ).length') }, becomes: -> (value) { value == users.size }, duration: 10.seconds
-      expect(evaluate_script('Object.keys( LiveRecord.Model.all.User.all ).length')).to eq users.size
-      wait before: -> { evaluate_script('Object.keys( LiveRecord.Model.all.Post.all ).length') }, becomes: -> (value) { value == posts.size }, duration: 10.seconds
-      expect(evaluate_script('Object.keys( LiveRecord.Model.all.Post.all ).length')).to eq posts.size
-
-      # users should have correct associated posts
-      expect(evaluate_script(
-        <<-eos
-        LiveRecord.Model.all.User.all[#{user1.id}].posts().map(
-          function(post) { return post.id() }
-        )
-        eos
-      )).to eq user1.posts.pluck(:id)
-
-      expect(evaluate_script(
-        <<-eos
-        LiveRecord.Model.all.User.all[#{user2.id}].posts().map(
-          function(post) { return post.id() }
-        )
-        eos
-      )).to eq user2.posts.pluck(:id)
-
-      # posts should belong to correct associated user
-      expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post1.id}].user().id()")).to eq post1.user.id
-      expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post2.id}].user().id()")).to eq post2.user.id
-      expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post3.id}].user()")).to eq nil
     end
   end
 end
