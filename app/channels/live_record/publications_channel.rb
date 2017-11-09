@@ -18,7 +18,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       newly_created_record = model_class.find(message['attributes']['id'])
 
       @authorised_attributes ||= authorised_attributes(newly_created_record, current_user)
-      
+
       active_record_relation = SearchAdapters.mapped_active_record_relation(
         model_class: model_class,
         conditions_hash: params[:where].to_h,
@@ -42,10 +42,13 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
     model_class = params[:model_name].safe_constantize
 
     if model_class && model_class < ApplicationRecord
+      records = model_class.all
 
-      records = model_class.where(
-        'created_at >= ?', DateTime.parse(params[:stale_since]) - LiveRecord.configuration.sync_record_buffer_time
-      )
+      if params[:stale_since].present?
+        records = records.where(
+          'created_at >= ?', DateTime.parse(params[:stale_since]) - LiveRecord.configuration.sync_record_buffer_time
+        )
+      end
 
       # we `transmmit` a message back to client for each matching record
       records.find_each do |record|

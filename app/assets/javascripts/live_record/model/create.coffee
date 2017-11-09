@@ -5,12 +5,12 @@ LiveRecord.Model.create = (config) ->
 
   # NEW
   Model = (attributes) ->
-    this.attributes = attributes
+    @attributes = attributes
 
-    Object.keys(this.attributes).forEach (attribute_key) ->
+    Object.keys(@attributes).forEach (attribute_key) ->
       if Model.prototype[attribute_key] == undefined
         Model.prototype[attribute_key] = ->
-          this.attributes[attribute_key]
+          @attributes[attribute_key]
     this
 
   Model.modelName = config.modelName
@@ -49,9 +49,9 @@ LiveRecord.Model.create = (config) ->
 
   Model.subscriptions = []
 
-  Model.subscribe = (config) ->
-    config ||= {}
+  Model.subscribe = (config = {}) ->
     config.callbacks ||= {}
+    config.reload ||= false
 
     subscription = App.cable.subscriptions.create(
       {
@@ -61,13 +61,18 @@ LiveRecord.Model.create = (config) ->
       },
 
       connected: ->
-        if this.liveRecord._staleSince != undefined
+        # if forced reload of all records after subscribing, reload only once at the very start of connection, and no longer when reconnecting
+        if config.reload
+          config.reload = false
+          @syncRecords()
+
+        if @liveRecord._staleSince != undefined
           @syncRecords()
 
         config.callbacks['on:connect'].call(this) if config.callbacks['on:connect']
 
       disconnected: ->
-        this.liveRecord._staleSince = (new Date()).toISOString() unless this.liveRecord._staleSince
+        @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
         config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
 
       received: (data) ->
@@ -85,9 +90,9 @@ LiveRecord.Model.create = (config) ->
           'sync_records',
           model_name: Model.modelName,
           where: config.where,
-          stale_since: this.liveRecord._staleSince
+          stale_since: @liveRecord._staleSince
         )
-        this.liveRecord._staleSince = undefined
+        @liveRecord._staleSince = undefined
     )
 
     subscription.liveRecord = {}
@@ -95,36 +100,43 @@ LiveRecord.Model.create = (config) ->
     subscription.liveRecord.where = config.where
     subscription.liveRecord.callbacks = config.callbacks
 
-    this.subscriptions.push(subscription)
+    @subscriptions.push(subscription)
     subscription
 
   Model.unsubscribe = (subscription) ->
-    index = this.subscriptions.indexOf(subscription)
-    throw new Error('`subscription` argument does not exist in ' + this.modelName + ' subscriptions list') if index == -1
+    index = @subscriptions.indexOf(subscription)
+    throw new Error('`subscription` argument does not exist in ' + @modelName + ' subscriptions list') if index == -1
 
     App.cable.subscriptions.remove(subscription)
 
-    this.subscriptions.splice(index, 1)
+    @subscriptions.splice(index, 1)
     subscription
 
-  Model.prototype.subscribe = ->
-    return this.subscription if this.subscription != undefined
+  Model.prototype.subscribe = (config = {}) ->
+    return @subscription if @subscription != undefined
+
+    config.reload ||= false
 
     # listen for record changes (update / destroy)
-    subscription = App['live_record_' + this.modelName() + '_' + this.id()] = App.cable.subscriptions.create(
+    subscription = App['live_record_' + @modelName() + '_' + @id()] = App.cable.subscriptions.create(
       {
         channel: 'LiveRecord::ChangesChannel'
-        model_name: this.modelName()
-        record_id: this.id()
+        model_name: @modelName()
+        record_id: @id()
       },
 
       record: ->
         return @_record if @_record
-        identifier = JSON.parse(this.identifier)
+        identifier = JSON.parse(@identifier)
         @_record = Model.all[identifier.record_id]
 
       # on: connect
       connected: ->
+        # if forced reload of this record after subscribing, reload only once at the very start of connection, and no longer when reconnecting
+        if config.reload
+          config.reload = false
+          @syncRecord(@record())
+
         if @record()._staleSince != undefined
           @syncRecord(@record())
 
@@ -173,7 +185,7 @@ LiveRecord.Model.create = (config) ->
         @record()._staleSince = undefined
     )
 
-    this.subscription = subscription
+    @subscription = subscription
 
   Model.prototype.model = ->
     Model
@@ -182,45 +194,44 @@ LiveRecord.Model.create = (config) ->
     Model.modelName
 
   Model.prototype.unsubscribe = ->
-    return if this.subscription == undefined
-    App.cable.subscriptions.remove(this.subscription)
+    return if @subscription == undefined
+    App.cable.subscriptions.remove(@subscription)
     delete this['subscription']
 
   Model.prototype.isSubscribed = ->
-    this.subscription != undefined
+    @subscription != undefined
 
   # CREATE
   Model.prototype.create = (options) ->
-    throw new Error(Model.modelName+'('+this.id()+') is already in the store') if Model.all[this.attributes.id]
-    this._callCallbacks('before:create', undefined)
+    throw new Error(Model.modelName+'('+@id()+') is already in the store') if Model.all[@attributes.id]
+    @_callCallbacks('before:create', undefined)
 
-    Model.all[this.attributes.id] = this
-    # because we do not know if this newly created object is statle, then we just set it to very long time ago, before we subscribe()
-    this._staleSince = (new Date(1900, 0, 1)).toISOString()
-    this.subscribe()
+    Model.all[@attributes.id] = this
+    # because we do not know if this newly created object is stale upon creation, then we force reload it
+    @subscribe({reload: true})
 
-    this._callCallbacks('after:create', undefined)
+    @_callCallbacks('after:create', undefined)
     this
 
   # UPDATE
   Model.prototype.update = (attributes) ->
-    this._callCallbacks('before:update', undefined)
+    @_callCallbacks('before:update', undefined)
 
     self = this
     Object.keys(attributes).forEach (attribute_key) ->
       self.attributes[attribute_key] = attributes[attribute_key]
 
-    this._callCallbacks('after:update', undefined)
+    @_callCallbacks('after:update', undefined)
     true
 
   # DESTROY
   Model.prototype.destroy = ->
-    this._callCallbacks('before:destroy', undefined)
+    @_callCallbacks('before:destroy', undefined)
 
-    this.unsubscribe()
-    delete Model.all[this.attributes.id]
+    @unsubscribe()
+    delete Model.all[@attributes.id]
 
-    this._callCallbacks('after:destroy', undefined)
+    @_callCallbacks('after:destroy', undefined)
     this
 
   # CALLBACKS
@@ -251,16 +262,16 @@ LiveRecord.Model.create = (config) ->
 
   # adding new callbackd to the list
   Model.prototype.addCallback = Model.addCallback = (callbackKey, callbackFunction) ->
-    index = this._callbacks[callbackKey].indexOf(callbackFunction)
+    index = @_callbacks[callbackKey].indexOf(callbackFunction)
     if index == -1
-      this._callbacks[callbackKey].push(callbackFunction)
+      @_callbacks[callbackKey].push(callbackFunction)
       return callbackFunction
 
   # removing a callback from the list
   Model.prototype.removeCallback = Model.removeCallback = (callbackKey, callbackFunction) ->
-    index = this._callbacks[callbackKey].indexOf(callbackFunction)
+    index = @_callbacks[callbackKey].indexOf(callbackFunction)
     if index != -1
-      this._callbacks[callbackKey].splice(index, 1)
+      @_callbacks[callbackKey].splice(index, 1)
       return callbackFunction
 
   Model.prototype._callCallbacks = (callbackKey, args) ->
@@ -269,15 +280,15 @@ LiveRecord.Model.create = (config) ->
       callback.apply(this, args)
 
     # call instance callbacks
-    for callback in this._callbacks[callbackKey]
+    for callback in @_callbacks[callbackKey]
       callback.apply(this, args)
 
   Model.prototype._setChangesFrom = (attributes) ->
-    this.changes = {}
+    @changes = {}
 
     for attributeName, attributeValue of attributes
-      unless this.attributes[attributeName] && this.attributes[attributeName] == attributeValue
-        this.changes[attributeName] = [this.attributes[attributeName], attributeValue]
+      unless @attributes[attributeName] && @attributes[attributeName] == attributeValue
+        @changes[attributeName] = [@attributes[attributeName], attributeValue]
 
   Model.prototype._unsetChanges = () ->
     delete this['changes']

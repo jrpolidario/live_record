@@ -13,7 +13,7 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
             record.reload
           rescue ActiveRecord::RecordNotFound
           end
-          
+
           authorised_attributes = authorised_attributes(record, current_user)
 
           # if not just :id
@@ -33,19 +33,27 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
   end
 
   def sync_record(data)
-    find_record_from_params(data.symbolize_keys) do |record|
+    params = data.symbolize_keys
+
+    find_record_from_params(params) do |record|
       authorised_attributes = authorised_attributes(record, current_user)
 
       # if not just :id
       if authorised_attributes.size > 1
-        live_record_update = LiveRecordUpdate.where(
-          recordable_type: record.class.name,
-          recordable_id: record.id
-        ).where(
-          'created_at >= ?', DateTime.parse(data['stale_since']) - LiveRecord.configuration.sync_record_buffer_time
-        ).order(id: :asc)
-        
-        if live_record_update.exists?
+        live_record_updates = nil
+
+        if params[:stale_since].present?
+          live_record_updates = LiveRecordUpdate.where(
+            recordable_type: record.class.name,
+            recordable_id: record.id
+          ).where(
+            'created_at >= ?', DateTime.parse(params[:stale_since]) - LiveRecord.configuration.sync_record_buffer_time
+          )
+        end
+
+        # if stale_since is unknown, or there is a live_record_update that has happened while disconnected,
+        # then we update the record in the client-side
+        if params[:stale_since].blank? || live_record_updates.exists?
           message = { 'action' => 'update', 'attributes' => record.attributes }
           response = filtered_message(message, authorised_attributes)
           transmit response if response.present?

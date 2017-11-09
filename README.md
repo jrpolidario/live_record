@@ -32,10 +32,13 @@
 
 ### Subscribing to Record Creation
   ```js
-  // subscribe, and auto-receive newly created Book records from the Rails server
+  // subscribe and auto-receive newly created Book records from the Rails server
   LiveRecord.Model.all.Book.subscribe()
 
-  // ...or only those which are enabled
+  // ... or also load all Book records as well (not just the new ones)
+  // LiveRecord.Model.all.Book.subscribe({reload: true})
+
+  // ...or only those which are enabled (you can also combine this with `reload: true`)
   // LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}})
 
   // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
@@ -114,7 +117,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.3'
+    gem 'live_record', '~> 0.2.4'
     ```
 
 2. Run:
@@ -345,15 +348,21 @@
     })
     ```
 
-9. To automatically receive new Book records, you may subscribe:
+9. To automatically receive new Book records, and/or also load the old ones, you may subscribe:
 
     ```js
-    // subscribe
+    // subscribe and auto-fetches newly created Book records from the backend
     var subscription = LiveRecord.Model.all.Book.subscribe();
+
+    // ...or also load all Book records (not just the new ones).
+    // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
+    // subscription = LiveRecord.Model.all.Book.subscribe({reload: true});
 
     // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
     // For the list of supported operators (like `..._eq`), see JS API `MODEL.subscribe(CONFIG)` below
     // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}});
+
+    // you may choose to combine both `where` and `reload` arguments described above
 
     // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
     LiveRecord.Model.all.Book.addCallback('after:create', function() {
@@ -490,6 +499,7 @@
 
 ### `MODEL.subscribe(CONFIG)`
   * `CONFIG` (Object, Optional)
+    * `reload`: (Boolean, Default: false)
     * `where`: (Object)
       * `ATTRIBUTENAME_OPERATOR`: (Any Type)
     * `callbacks`: (Object)
@@ -498,6 +508,7 @@
       * `before:create`: (function Object)
       * `after:create`: (function Object)
   * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
+  * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the new ones.
   * you can also pass in `callbacks` (see above). These callbacks are only applicable to this subscription, and is independent of the Model and Instance callbacks.
   * `ATTRIBUTENAME_OPERATOR` means something like (for example): `is_enabled_eq`, where `is_enabled` is the `ATTRIBUTENAME` and `eq` is the `OPERATOR`.
     * you can have as many `ATTRIBUTENAME_OPERATOR` as you like, but keep in mind that the logic applied to them is "AND", and not "OR". For "OR" conditions, use `ransack`
@@ -536,8 +547,11 @@
   * if association is "belongs to", then returns the record (if exists in current store)
   * (i.e. `bookInstance.user()`, `bookInstance.reviews()`)
 
-### `MODELINSTANCE.subscribe()`
+### `MODELINSTANCE.subscribe(config)`
+  * `CONFIG` (Object, Optional)
+    * `reload`: (Boolean, Default: false)
   * subscribes to the `LiveRecord::ChangesChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
+  * when `reload: true`, the record is forced reloaded to make sure all attributes are in-sync
   * returns the `subscription` object (the ActionCable subscription object itself)
 
 ### `MODELINSTANCE.unsubscribe()`
@@ -550,7 +564,7 @@
   * the `subscription` object (the ActionCable subscription object itself)
 
 ### `MODELINSTANCE.create()`
-  * stores the instance to the store, and then `subscribe()` to the `LiveRecord::ChangesChannel` for syncing
+  * stores the instance to the store, and then `subscribe({reload: true})` to the `LiveRecord::ChangesChannel` for syncing
   * returns the instance
 
 ### `MODELINSTANCE.update(ATTRIBUTES)`
@@ -596,6 +610,10 @@
 * MIT
 
 ## Changelog
+* 0.2.4
+  * you can now pass in `{reload: true}` to `subscribe()` like the folowing:
+    * `MODEL.subscribe({reload: true})` to immediately load all records from backend, and not just the new ones
+    * `MODELINSTANCE.subscribe({reload: true})` to immediately reload the record and make sure it's in-sync
 * 0.2.3
   * IMPORTANT! renamed callback from `on:response_error` to `on:responseError` for conformity. So please update your code accordingly.
   * added [associations](#example-2---model--callbacks--associations):
