@@ -11,6 +11,19 @@ LiveRecord.Model.create = (config) ->
       if Model.prototype[attribute_key] == undefined
         Model.prototype[attribute_key] = ->
           @attributes[attribute_key]
+
+    @_callbacks = {
+      'on:connect': [],
+      'on:disconnect': [],
+      'on:responseError': [],
+      'before:create': [],
+      'after:create': [],
+      'before:update': [],
+      'after:update': [],
+      'before:destroy': [],
+      'after:destroy': []
+    }
+
     this
 
   Model.modelName = config.modelName
@@ -237,18 +250,6 @@ LiveRecord.Model.create = (config) ->
   # CALLBACKS
 
   Model._callbacks = {
-    'on:connect': [],
-    'on:disconnect': [],
-    'on:responseError': [],
-    'before:create': [],
-    'after:create': [],
-    'before:update': [],
-    'after:update': [],
-    'before:destroy': [],
-    'after:destroy': []
-  }
-
-  Model.prototype._callbacks = {
     'on:connect': [],
     'on:disconnect': [],
     'on:responseError': [],

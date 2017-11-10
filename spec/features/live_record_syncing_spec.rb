@@ -215,5 +215,22 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
       wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined") }, becomes: -> (value) { value == false }
       expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined")).to be true
     end
+
+    scenario 'JS-Client should not have shared callbacks for those callbacks defined only for a particular post record', js: true do
+      visit '/posts'
+
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == posts.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be posts.count
+
+      execute_script(
+        <<-eos
+        var post1 = LiveRecord.Model.all.Post.all[#{post1.id}];
+        var someCallbackFunction = function() {};
+        post1.addCallback('after:create', someCallbackFunction);
+        eos
+      )
+
+      expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post2.id}]._callbacks['after:create'].length")).to eq 0
+    end
   end
 end

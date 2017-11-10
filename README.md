@@ -117,7 +117,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.4'
+    gem 'live_record', '~> 0.2.5'
     ```
 
 2. Run:
@@ -284,7 +284,7 @@
         * `"forbidden"` - Current User is not authorized to sync record changes. Happens when Model's `live_record_whitelisted_attributes` method returns empty array.
         * `"bad_request"` - Happens when `LiveRecord.Model.create({modelName: 'INCORRECTMODELNAME'})`
 
-8. Load the records into the JS Model-store through JSON REST (i.e.):
+8. Load the records into the JS Model-store:
 
     * Any record created/loaded in the JS-store is automatically synced whenever it is updated from the backend
     * When reconnected after losing connection, the records in the store are synced automatically.
@@ -610,6 +610,8 @@
 * MIT
 
 ## Changelog
+* 0.2.5
+  * fixed a major bug where same-model record instances were all sharing the same `@_callbacks` object, which then effectively calling also callbacks not specifically defined just for a specific record instance.
 * 0.2.4
   * you can now pass in `{reload: true}` to `subscribe()` like the folowing:
     * `MODEL.subscribe({reload: true})` to immediately load all records from backend, and not just the new ones
