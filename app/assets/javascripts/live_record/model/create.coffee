@@ -288,7 +288,7 @@ LiveRecord.Model.create = (config) ->
     @changes = {}
 
     for attributeName, attributeValue of attributes
-      unless @attributes[attributeName] && @attributes[attributeName] == attributeValue
+      unless @attributes[attributeName] == attributeValue
         @changes[attributeName] = [@attributes[attributeName], attributeValue]
 
   Model.prototype._unsetChanges = () ->

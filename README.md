@@ -117,7 +117,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.5'
+    gem 'live_record', '~> 0.2.6'
     ```
 
 2. Run:
@@ -610,6 +610,8 @@
 * MIT
 
 ## Changelog
+* 0.2.6
+  * fixed minor bug where `MODELINSTANCE.changes` do not accurately work on NULL values.
 * 0.2.5
   * fixed a major bug where same-model record instances were all sharing the same `@_callbacks` object, which then effectively calling also callbacks not specifically defined just for a specific record instance.
 * 0.2.4
