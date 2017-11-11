@@ -572,8 +572,8 @@
     * `gteq` greater than or equal to; i.e. `created_at_gteq: '2017-12-291T13:47:59.238Z'`
     * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
     * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
-    * `matches` matches using SQL `LIKE`; i.e. `matches: '%Harry Potter%'`
-    * `does_not_match` does not match using SQL `NOT LIKE`; i.e. `does_not_match: '%Harry Potter%'`
+    * `matches` matches using SQL `LIKE`; i.e. `title_matches: '%Harry Potter%'`
+    * `does_not_match` does not match using SQL `NOT LIKE`; i.e. `title_does_not_match: '%Harry Potter%'`
 
 ### `MODEL.unsubscribe(SUBSCRIPTION)`
   * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
