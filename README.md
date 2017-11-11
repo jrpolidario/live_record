@@ -35,7 +35,7 @@
   // subscribe and auto-receive newly created Book records from the Rails server
   LiveRecord.Model.all.Book.subscribe()
 
-  // ... or also load all Book records as well (not just the new ones)
+  // ... or also load all Book records as well, and then subscribes for new ones that will be created
   // LiveRecord.Model.all.Book.subscribe({reload: true})
 
   // ...or only those which are enabled (you can also combine this with `reload: true`)
