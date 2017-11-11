@@ -660,7 +660,7 @@
 
 ## Changelog
 * 0.2.8
-  * You can now specify `:id` into `live_record_whitelisted_attributes` for verbosity; used to be automatically-included by default. Needed to this otherwise there was this minor bug where `subscribe()` still receives records (just :id attribute though) even when it is specified to be not-authorized.
+  * You can now specify `:id` into `live_record_whitelisted_attributes` for verbosity; used to be automatically-included by default. Needed to do this otherwise there was this minor bug where `subscribe()` still receives records (having just `:id` attribute though) even when it is specified to be not-authorized.
   * fixed minor bug when `live_record_whitelisted_attributes` is not returning anything, throwing a `NoMethodError`
 * 0.2.7
   * improved performance when using `subscribe({reload: true})`, but by doing so, I am forced to a conscious decision to have another separate model method for "queryable" attributes: `live_record_queryable_attributes`, which both has `pro` and `cons`
