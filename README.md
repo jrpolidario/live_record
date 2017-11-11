@@ -108,6 +108,16 @@
         []
       end
     end
+
+    def self.live_record_queryable_attributes(current_user)
+      # Add attributes to this array that you would like `current_user` to be able to query upon on the `subscribe({where: {...}}) function`
+      # empty array means not-authorised
+      if current_user.isAdmin?
+        [:title, :author, :created_at, :updated_at, :reference_id, :origin_address]
+      else
+        []
+      end
+    end
   end
   ```
 
@@ -117,7 +127,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.6'
+    gem 'live_record', '~> 0.2.7'
     ```
 
 2. Run:
@@ -172,6 +182,12 @@
         # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
         [:title, :author, :created_at, :updated_at]
       end
+
+      def self.live_record_queryable_attributes(current_user)
+        # Add attributes to this array that you would like current_user to query upon when using `.subscribe({where: {...})`
+        # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
+        [:title, :author, :created_at, :updated_at]
+      end
     end
     ```
 
@@ -193,6 +209,13 @@
         else
           []
         end
+      end
+
+      def self.live_record_queryable_attributes(current_user)
+        # this method should look like your `live_record_whitelisted_attributes` above, only except if you want to further customise this for flexibility
+        # or... that you may just simply return `[]` (empty array) if you do not want to allow users to use `subscribe()`
+        # also take note that this method only has `current_user` argument compared to `live_record_whitelisted_attributes` above which also has the `book` argument. This is intended for SQL performance reasons
+        [:title, :author, :created_at, :updated_at]
       end
     end
     ```
@@ -348,6 +371,24 @@
     })
     ```
 
+    ### Example 3 - Using `Subscribe({reload: true})`
+
+    > You may also load records from the backend by using `subscribe({reload: true})`. `subscribe()` just auto-loads NEW records that will be created, while `subscribe({reload: true})` first loads ALL records (subject to its {where: ...} condition), and then also auto-loads new records that will be created
+
+    ```js
+    var subscription = LiveRecord.Model.all.Book.subscribe({
+      reload: true,
+      where: { title_matches: '%Harry Potter%' },
+      callbacks: {
+        'after:create': function(book) {
+          console.log('Created the following', book);
+        }
+      }
+    });
+    ```
+
+    > Take note however that `subscribe()` above not only LOADS but also SUBSCRIBES! See 9. below for details
+
 9. To automatically receive new Book records, and/or also load the old ones, you may subscribe:
 
     ```js
@@ -401,16 +442,22 @@
           [:title, :is_enabled]
         end
 
+        ## this method will be invoked when `subscribe()` is called
+        ## but, you should not use this method when using `ransack` gem!
+        ## ransack's methods like `ransackable_attributes` below will be invoked instead
+        # def self.live_record_queryable_attributes(book, current_user)
+        #   [:title, :is_enabled]
+        # end
+
         private
 
-        # see ransack gem for more details: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
-        # you can write your own columns here, but you may just simply allow ALL COLUMNS to be searchable, because the `live_record_whitelisted_attributes` method above will be also called anyway, and therefore just simply handle whitelisting there.
-        # therefore you can actually remove the whole `self.ransackable_attributes` method below
+        # see ransack gem for more details regarding Authorization: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
 
-        ## LiveRecord passes the `current_user` into `auth_object`, so you can access `current_user` inside below
-        # def self.ransackable_attributes(auth_object = nil)
-        #   column_names + _ransackers.keys
-        # end
+        # this method will be invoked when `subscribe()` is called
+        # LiveRecord passes the `current_user` into `auth_object`, so you can access `current_user` inside below
+        def self.ransackable_attributes(auth_object = nil)
+          column_names + _ransackers.keys
+        end
       end
       ```
 
@@ -505,8 +552,8 @@
     * `callbacks`: (Object)
       * `on:connect`: (function Object)
       * `on:disconnect`: (function Object)
-      * `before:create`: (function Object)
-      * `after:create`: (function Object)
+      * `before:create`: (function Object; function argument = record)
+      * `after:create`: (function Object; function argument = record)
   * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
   * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the new ones.
   * you can also pass in `callbacks` (see above). These callbacks are only applicable to this subscription, and is independent of the Model and Instance callbacks.
@@ -525,6 +572,8 @@
     * `gteq` greater than or equal to; i.e. `created_at_gteq: '2017-12-291T13:47:59.238Z'`
     * `in` in Array; i.e. `id_in: [2, 56, 19, 68]`
     * `not_in` in Array; i.e. `id_not_in: [2, 56, 19, 68]`
+    * `matches` matches using SQL `LIKE`; i.e. `matches: '%Harry Potter%'`
+    * `does_not_match` does not match using SQL `NOT LIKE`; i.e. `does_not_match: '%Harry Potter%'`
 
 ### `MODEL.unsubscribe(SUBSCRIPTION)`
   * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
@@ -610,6 +659,12 @@
 * MIT
 
 ## Changelog
+* 0.2.7
+  * improved performance when using `subscribe({reload: true})`, but by doing so, I am forced to a conscious decision to have another separate model method for "queryable" attributes: `live_record_queryable_attributes`, which both has `pro` and `cons`
+    * pros:
+      * greatly sped up SQL for loading of data
+    * pro & con: now two methods in model: `live_record_whitelisted_attributes` and `live_record_queryable_attributes` which should have mostly the same code [(see some differences above)]('#example-1---simple-usage') which makes it repetitive to some degree, although this allows more flexibility.
+  * added `cont` and `not_cont` filters
 * 0.2.6
   * fixed minor bug where `MODELINSTANCE.changes` do not accurately work on NULL values.
 * 0.2.5

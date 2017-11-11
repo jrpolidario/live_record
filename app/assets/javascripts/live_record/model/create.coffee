@@ -4,7 +4,7 @@ LiveRecord.Model.create = (config) ->
   config.plugins != undefined || config.callbacks = {}
 
   # NEW
-  Model = (attributes) ->
+  Model = (attributes = {}) ->
     @attributes = attributes
 
     Object.keys(@attributes).forEach (attribute_key) ->
@@ -89,14 +89,25 @@ LiveRecord.Model.create = (config) ->
         config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
 
       received: (data) ->
-        @onAction[data.action].call(this, data)
+        if data.error
+          @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
+          @onError[data.error.code].call(this, data)
+        else
+          @onAction[data.action].call(this, data)
 
       onAction:
         create: (data) ->
-          config.callbacks['before:create'].call(this, data) if config.callbacks['before:create']
           record = new Model(data.attributes)
+          config.callbacks['before:create'].call(this, record) if config.callbacks['before:create']
           record.create()
-          config.callbacks['after:create'].call(this, data) if config.callbacks['after:create']
+          config.callbacks['after:create'].call(this, record) if config.callbacks['after:create']
+
+      # handler for received() callback above
+      onError:
+        forbidden: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
+        bad_request: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
 
       syncRecords: ->
         @perform(

@@ -98,7 +98,9 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true do
     visit '/posts'
 
-    sleep(5)
+    # wait first for all posts to be loaded
+    wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+    expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
 
     post4 = create(:post, id: 98, is_enabled: true)
     post5 = create(:post, id: 99, is_enabled: false)
@@ -114,7 +116,9 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
     visit '/posts'
 
-    sleep(5)
+    # wait first for all posts to be loaded
+    wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+    expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
 
     # in index.html.erb:
     # LiveRecord.Model.all.Post.subscribe({ where: { is_enabled: true, content: 'somecontent' }});
@@ -133,13 +137,53 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records having only the whitelisted authorised attributes', js: true do
     visit '/posts'
 
-    sleep(5)
+    # wait first for all posts to be loaded
+    wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+    expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
 
     post4 = create(:post, is_enabled: true, title: 'sometitle', content: 'somecontent')
 
     wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}] == undefined") }, becomes: -> (value) { value == false }
     expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].title()")).to eq post4.title
     expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post4.id}].content()")).to eq nil
+  end
+
+  scenario 'JS-Client should not have shared callbacks for those callbacks defined only for a particular post record', js: true do
+    visit '/posts'
+
+    # wait first for all posts to be loaded
+    wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+    expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
+
+    execute_script(
+      <<-eos
+      var post1 = LiveRecord.Model.all.Post.all[#{post1.id}];
+      var someCallbackFunction = function() {};
+      post1.addCallback('after:create', someCallbackFunction);
+      eos
+    )
+
+    expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post2.id}]._callbacks['after:create'].length")).to eq 0
+  end
+
+  scenario 'JS-Client should receive response :forbidden error when using `subscribe()` but that the current_user is forbidden to do so', js: true do
+    visit '/posts'
+
+    # wait first for all posts to be loaded
+    wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+    expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
+
+    expect_any_instance_of(LiveRecord::BaseChannel).to(
+      receive(:respond_with_error).with(:forbidden, 'You do not have privileges to query').once
+    )
+
+    execute_script(
+      <<-eos
+      LiveRecord.Model.all.User.subscribe();
+      eos
+    )
+
+    sleep(5)
   end
 
   # see spec/internal/app/models/post.rb to view specified whitelisted attributes
@@ -150,9 +194,11 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
       visit '/posts'
 
-      sleep(5)
+      # wait first for all posts to be loaded
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
 
-      disconnection_time = 20 # seconds
+      disconnection_time = 10 # seconds
 
       Thread.new do
         sleep(2)
@@ -180,9 +226,11 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     scenario 'JS-Client receives all post records created during the time it got disconnected', js: true do
       visit '/posts'
 
-      sleep(5)
+      # wait first for all posts to be loaded
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
 
-      disconnection_time = 20 # seconds
+      disconnection_time = 10 # seconds
 
       post_created_before_disconnection = nil
       post_created_while_disconnected_1 = nil
@@ -214,23 +262,6 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
       wait before: -> { evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined") }, becomes: -> (value) { value == false }
       expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post_created_before_disconnection.id}] == undefined")).to be true
-    end
-
-    scenario 'JS-Client should not have shared callbacks for those callbacks defined only for a particular post record', js: true do
-      visit '/posts'
-
-      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == posts.count }, duration: 10.seconds
-      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be posts.count
-
-      execute_script(
-        <<-eos
-        var post1 = LiveRecord.Model.all.Post.all[#{post1.id}];
-        var someCallbackFunction = function() {};
-        post1.addCallback('after:create', someCallbackFunction);
-        eos
-      )
-
-      expect(evaluate_script("LiveRecord.Model.all.Post.all[#{post2.id}]._callbacks['after:create'].length")).to eq 0
     end
   end
 end

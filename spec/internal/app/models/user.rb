@@ -9,4 +9,8 @@ class User < ApplicationRecord
     # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
     [:email, :created_at, :updated_at]
   end
+
+  def self.live_record_queryable_attributes(current_user)
+    []
+  end
 end
