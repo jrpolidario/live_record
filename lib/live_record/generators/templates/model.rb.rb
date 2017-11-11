@@ -20,7 +20,7 @@ class <%= class_name %> < <%= parent_class_name.classify %>
     # then only these whitelisted attributes will be sent to this current_user client
     # Empty array means unauthorized
     # Example:
-    # [:email, :name, :is_admin, :group_id, :created_at, :updated_at]
+    # [:id, :email, :name, :is_admin, :group_id, :created_at, :updated_at]
     []
   end
 
@@ -36,7 +36,7 @@ class <%= class_name %> < <%= parent_class_name.classify %>
     # if you're using `ransack` gem, use `ransackable_attributes`
     # Empty array means unauthorized
     # Example:
-    # [:email, :name, :is_admin, :group_id, :created_at, :updated_at]
+    # [:id, :email, :name, :is_admin, :group_id, :created_at, :updated_at]
     []
   end
 end

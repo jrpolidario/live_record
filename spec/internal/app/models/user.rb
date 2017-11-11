@@ -5,9 +5,7 @@ class User < ApplicationRecord
   has_many :posts
 
   def self.live_record_whitelisted_attributes(user, current_user)
-    # Add attributes to this array that you would like current_user to have access to.
-    # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
-    [:email, :created_at, :updated_at]
+    [:id, :email, :created_at, :updated_at]
   end
 
   def self.live_record_queryable_attributes(current_user)

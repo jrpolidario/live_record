@@ -14,7 +14,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       reject_subscription
     end
 
-    if !(model_class && model_class.live_record_queryable_attributes(current_user).present?)
+    if !(model_class && Helpers.queryable_attributes(model_class, current_user).present?)
       respond_with_error(:forbidden, 'You do not have privileges to query')
       reject_subscription
     end
@@ -29,11 +29,11 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       )
 
       if active_record_relation.exists?(id: newly_created_record.id)
-        @authorised_attributes ||= authorised_attributes(newly_created_record, current_user)
-        # if not just :id
-        if @authorised_attributes.size > 1
+        whitelisted_attributes = Helpers.whitelisted_attributes(newly_created_record, current_user)
+
+        if whitelisted_attributes.size > 0
           message = { 'action' => 'create', 'attributes' => message['attributes'] }
-          response = filtered_message(message, @authorised_attributes)
+          response = filtered_message(message, whitelisted_attributes)
           transmit response if response.present?
         end
       end
@@ -61,11 +61,13 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       # we `transmmit` a message back to client for each matching record
       active_record_relation.find_each do |record|
         # but first, check for the authorised attributes, if exists
-        current_authorised_attributes = authorised_attributes(record, current_user)
+        whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
 
-        message = { 'action' => 'create', 'attributes' => record.attributes }
-        response = filtered_message(message, current_authorised_attributes)
-        transmit response if response.present?
+        if whitelisted_attributes.size > 0
+          message = { 'action' => 'create', 'attributes' => record.attributes }
+          response = filtered_message(message, whitelisted_attributes)
+          transmit response if response.present?
+        end
       end
     else
       respond_with_error(:bad_request, 'Not a correct model name')

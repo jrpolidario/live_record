@@ -28,12 +28,12 @@ class LiveRecord::PublicationsChannel
         current_user = args.fetch(:current_user)
 
         current_active_record_relation = model_class.all
-        queryable_attributes = model_class.live_record_queryable_attributes(current_user)
+        queryable_attributes = LiveRecord::BaseChannel::Helpers.queryable_attributes(model_class, current_user)
 
         conditions_hash.each do |key, value|
           operator = key.split('_').last
           # to get attribute_name, we subtract the end part of the string with size of operator substring; i.e.: created_at_lteq -> created_at
-          attribute_name = key[0..(-1 - operator.size - 1)].to_sym
+          attribute_name = key[0..(-1 - operator.size - 1)]
 
           if queryable_attributes.include?(attribute_name)
             case operator

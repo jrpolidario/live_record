@@ -5,20 +5,19 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
 
   def subscribed
     find_record_from_params(params) do |record|
-      authorised_attributes = authorised_attributes(record, current_user)
+      whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
 
-      if authorised_attributes.present?
+      if whitelisted_attributes.present?
         stream_for record, coder: ActiveSupport::JSON do |message|
           begin
             record.reload
           rescue ActiveRecord::RecordNotFound
           end
 
-          authorised_attributes = authorised_attributes(record, current_user)
+          whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
 
-          # if not just :id
-          if authorised_attributes.size > 1
-            response = filtered_message(message, authorised_attributes)
+          if whitelisted_attributes.size > 0
+            response = filtered_message(message, whitelisted_attributes)
             transmit response if response.present?
           else
             respond_with_error(:forbidden)
@@ -36,10 +35,9 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
     params = data.symbolize_keys
 
     find_record_from_params(params) do |record|
-      authorised_attributes = authorised_attributes(record, current_user)
+      whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
 
-      # if not just :id
-      if authorised_attributes.size > 1
+      if whitelisted_attributes.size > 0
         live_record_updates = nil
 
         if params[:stale_since].present?
@@ -55,7 +53,7 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
         # then we update the record in the client-side
         if params[:stale_since].blank? || live_record_updates.exists?
           message = { 'action' => 'update', 'attributes' => record.attributes }
-          response = filtered_message(message, authorised_attributes)
+          response = filtered_message(message, whitelisted_attributes)
           transmit response if response.present?
         end
       else

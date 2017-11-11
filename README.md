@@ -101,9 +101,9 @@
       # Add attributes to this array that you would like `current_user` to have access to when syncing this particular `book`
       # empty array means not-authorised
       if book.user == current_user
-        [:title, :author, :created_at, :updated_at, :reference_id, :origin_address]
+        [:id, :title, :author, :created_at, :updated_at, :reference_id, :origin_address]
       elsif current_user.present?
-        [:title, :author, :created_at, :updated_at]
+        [:id ,:title, :author, :created_at, :updated_at]
       else
         []
       end
@@ -113,7 +113,7 @@
       # Add attributes to this array that you would like `current_user` to be able to query upon on the `subscribe({where: {...}}) function`
       # empty array means not-authorised
       if current_user.isAdmin?
-        [:title, :author, :created_at, :updated_at, :reference_id, :origin_address]
+        [:id, :title, :author, :created_at, :updated_at, :reference_id, :origin_address]
       else
         []
       end
@@ -127,7 +127,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.7'
+    gem 'live_record', '~> 0.2.8'
     ```
 
 2. Run:
@@ -180,13 +180,13 @@
       def self.live_record_whitelisted_attributes(book, current_user)
         # Add attributes to this array that you would like current_user to have access to when syncing.
         # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
-        [:title, :author, :created_at, :updated_at]
+        [:id, :title, :author, :created_at, :updated_at]
       end
 
       def self.live_record_queryable_attributes(current_user)
         # Add attributes to this array that you would like current_user to query upon when using `.subscribe({where: {...})`
         # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
-        [:title, :author, :created_at, :updated_at]
+        [:id, :title, :author, :created_at, :updated_at]
       end
     end
     ```
@@ -203,9 +203,9 @@
         # Notice that from above, you also have access to `book` (the record currently requested by the client to be synced),
         # and the `current_user`, the current user who is trying to sync the `book` record.
         if book.user == current_user
-          [:title, :author, :created_at, :updated_at, :reference_id, :origin_address]
+          [:id, :title, :author, :created_at, :updated_at, :reference_id, :origin_address]
         elsif current_user.present?
-          [:title, :author, :created_at, :updated_at]
+          [:id, :title, :author, :created_at, :updated_at]
         else
           []
         end
@@ -215,7 +215,7 @@
         # this method should look like your `live_record_whitelisted_attributes` above, only except if you want to further customise this for flexibility
         # or... that you may just simply return `[]` (empty array) if you do not want to allow users to use `subscribe()`
         # also take note that this method only has `current_user` argument compared to `live_record_whitelisted_attributes` above which also has the `book` argument. This is intended for SQL performance reasons
-        [:title, :author, :created_at, :updated_at]
+        [:id, :title, :author, :created_at, :updated_at]
       end
     end
     ```
@@ -439,14 +439,14 @@
         has_many :live_record_updates, as: :recordable, dependent: :destroy
 
         def self.live_record_whitelisted_attributes(book, current_user)
-          [:title, :is_enabled]
+          [:id, :title, :is_enabled]
         end
 
         ## this method will be invoked when `subscribe()` is called
         ## but, you should not use this method when using `ransack` gem!
         ## ransack's methods like `ransackable_attributes` below will be invoked instead
         # def self.live_record_queryable_attributes(book, current_user)
-        #   [:title, :is_enabled]
+        #   [:id, :title, :is_enabled]
         # end
 
         private
@@ -659,6 +659,9 @@
 * MIT
 
 ## Changelog
+* 0.2.8
+  * You can now specify `:id` into `live_record_whitelisted_attributes` for verbosity; used to be automatically-included by default. Needed to this otherwise there was this minor bug where `subscribe()` still receives records (just :id attribute though) even when it is specified to be not-authorized.
+  * fixed minor bug when `live_record_whitelisted_attributes` is not returning anything, throwing a `NoMethodError`
 * 0.2.7
   * improved performance when using `subscribe({reload: true})`, but by doing so, I am forced to a conscious decision to have another separate model method for "queryable" attributes: `live_record_queryable_attributes`, which both has `pro` and `cons`
     * pros:
