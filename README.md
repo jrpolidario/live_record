@@ -664,7 +664,7 @@
     * pros:
       * greatly sped up SQL for loading of data
     * pro & con: now two methods in model: `live_record_whitelisted_attributes` and `live_record_queryable_attributes` which should have mostly the same code [(see some differences above)]('#example-1---simple-usage') which makes it repetitive to some degree, although this allows more flexibility.
-  * added `cont` and `not_cont` filters
+  * added `matches` and `does_not_match` filters
 * 0.2.6
   * fixed minor bug where `MODELINSTANCE.changes` do not accurately work on NULL values.
 * 0.2.5
