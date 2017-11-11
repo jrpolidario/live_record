@@ -663,7 +663,7 @@
   * improved performance when using `subscribe({reload: true})`, but by doing so, I am forced to a conscious decision to have another separate model method for "queryable" attributes: `live_record_queryable_attributes`, which both has `pro` and `cons`
     * pros:
       * greatly sped up SQL for loading of data
-    * pro & con: now two methods in model: `live_record_whitelisted_attributes` and `live_record_queryable_attributes` which should have mostly the same code [(see some differences above)]('#example-1---simple-usage') which makes it repetitive to some degree, although this allows more flexibility.
+    * pro & con: now two methods in model: `live_record_whitelisted_attributes` and `live_record_queryable_attributes` which should have mostly the same code [(see some differences above)](#example-1---simple-usage) which makes it repetitive to some degree, although this allows more flexibility.
   * added `matches` and `does_not_match` filters
 * 0.2.6
   * fixed minor bug where `MODELINSTANCE.changes` do not accurately work on NULL values.
