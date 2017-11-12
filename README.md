@@ -149,7 +149,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.9'
+    gem 'live_record', '~> 0.3.1'
     ```
 
 2. Run:
@@ -751,6 +751,8 @@ end
 * MIT
 
 ## Changelog
+* 0.3.1
+  * removed a `console.log()` debugging code
 * 0.3.0
   * Ability to now auto-load **created** or **updated** records that match your specified "where" condition.
   * See [Setup #10 above](#setup)
