@@ -411,63 +411,63 @@
 
     > Take note however that `subscribe()` and `autoload()` not only LOADS but also SUBSCRIBES! See 9. below for details
 
-9.a. To automatically receive new Book records, you may subscribe:
+9. To automatically receive new Book records, you may subscribe:
 
-  ```js
-  // subscribe and auto-fetch newly created Book records from the backend
-  var subscription = LiveRecord.Model.all.Book.subscribe();
+    ```js
+    // subscribe and auto-fetch newly created Book records from the backend
+    var subscription = LiveRecord.Model.all.Book.subscribe();
 
-  // ...or also load all Book records (not just the new ones).
-  // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
-  // subscription = LiveRecord.Model.all.Book.subscribe({reload: true});
+    // ...or also load all Book records (not just the new ones).
+    // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
+    // subscription = LiveRecord.Model.all.Book.subscribe({reload: true});
 
-  // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
-  // For the list of supported operators (like `..._eq`), see JS API `MODEL.subscribe(CONFIG)` below
-  // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}});
+    // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
+    // For the list of supported operators (like `..._eq`), see JS API `MODEL.subscribe(CONFIG)` below
+    // subscription = LiveRecord.Model.all.Book.subscribe({where: {is_enabled_eq: true}});
 
-  // you may choose to combine both `where` and `reload` arguments described above
+    // you may choose to combine both `where` and `reload` arguments described above
 
-  // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
-  LiveRecord.Model.all.Book.addCallback('after:create', function() {
-    // let's say you have a code here that adds this new Book on the page
-    // `this` refers to the Book record that has been created
-    console.log(this);
-  })
+    // now, we can just simply add a "create" callback, to apply our own logic whenever a new Book record is streamed from the backend
+    LiveRecord.Model.all.Book.addCallback('after:create', function() {
+      // let's say you have a code here that adds this new Book on the page
+      // `this` refers to the Book record that has been created
+      console.log(this);
+    })
 
-  // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.subscribe(CONFIG)` below for information
+    // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.subscribe(CONFIG)` below for information
 
-  // you may also want to unsubscribe as you wish
-  LiveRecord.Model.all.Book.unsubscribe(subscription);
-  ```
+    // you may also want to unsubscribe as you wish
+    LiveRecord.Model.all.Book.unsubscribe(subscription);
+    ```
 
-9.b. To automatically receive new/updated Book records, you may autoload:
+10. To automatically receive new/updated Book records, you may autoload:
 
-  ```js
-  // subscribe and auto-fetch newly created / updated Book records from the backend
-  var subscription = LiveRecord.Model.all.Book.autoload();
+      ```js
+      // subscribe and auto-fetch newly created / updated Book records from the backend
+      var subscription = LiveRecord.Model.all.Book.autoload();
 
-  // ...or also load all Book records (not just the new ones).
-  // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
-  // subscription = LiveRecord.Model.all.Book.autoload({reload: true});
+      // ...or also load all Book records (not just the new ones).
+      // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
+      // subscription = LiveRecord.Model.all.Book.autoload({reload: true});
 
-  // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
-  // For the list of supported operators (like `..._eq`), see JS API `MODEL.autoload(CONFIG)` below
-  // subscription = LiveRecord.Model.all.Book.autoload({where: {is_enabled_eq: true}});
+      // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
+      // For the list of supported operators (like `..._eq`), see JS API `MODEL.autoload(CONFIG)` below
+      // subscription = LiveRecord.Model.all.Book.autoload({where: {is_enabled_eq: true}});
 
-  // you may choose to combine both `where` and `reload` arguments described above
+      // you may choose to combine both `where` and `reload` arguments described above
 
-  // now, we can just simply add a "createOrUpdate" callback, to apply our own logic whenever a new/updated Book record is streamed from the backend
-  LiveRecord.Model.all.Book.addCallback('after:createOrUpdate', function() {
-    // let's say you have a code here that adds this new Book on the page
-    // `this` refers to the Book record that has been created/updated
-    console.log(this);
-  })
+      // now, we can just simply add a "createOrUpdate" callback, to apply our own logic whenever a new/updated Book record is streamed from the backend
+      LiveRecord.Model.all.Book.addCallback('after:createOrUpdate', function() {
+        // let's say you have a code here that adds this new Book on the page
+        // `this` refers to the Book record that has been created/updated
+        console.log(this);
+      })
 
-  // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.autoload(CONFIG)` below for information
+      // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.autoload(CONFIG)` below for information
 
-  // you may also want to unsubscribe as you wish
-  LiveRecord.Model.all.Book.unsubscribe(subscription);
-  ```
+      // you may also want to unsubscribe as you wish
+      LiveRecord.Model.all.Book.unsubscribe(subscription);
+      ```
 
 ### Ransack Search Queries (Optional)
 
@@ -753,7 +753,7 @@ end
 ## Changelog
 * 0.3.0
   * Ability to now auto-load **created** or **updated** records that match your specified "where" condition.
-  * See [Setup 9.b above](#setup)
+  * See [Setup #10 above](#setup)
 * 0.2.8
   * You can now specify `:id` into `live_record_whitelisted_attributes` for verbosity; used to be automatically-included by default. Needed to do this otherwise there was this minor bug where `subscribe()` still receives records (having just `:id` attribute though) even when it is specified to be not-authorized.
   * fixed minor bug when `live_record_whitelisted_attributes` is not returning anything, throwing a `NoMethodError`
