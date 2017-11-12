@@ -112,7 +112,6 @@ LiveRecord.Model.create = (config) ->
             record.update(data.attributes)
           else
             record.create()
-          console.log(record)
           config.callbacks['after:create_or_update'].call(this, record) if config.callbacks['after:create_or_update']
 
       # handler for received() callback above
