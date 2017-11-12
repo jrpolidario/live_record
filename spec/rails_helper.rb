@@ -4,7 +4,7 @@ Dir[__dir__ + '/helpers/*.rb'].each {|file| require file }
 
 ActiveRecord::Migration.maintain_test_schema!
 
-Capybara.javascript_driver = :selenium_chrome_headless # :selenium_chrome
+Capybara.javascript_driver = :selenium_chrome # :selenium_chrome_headless
 Capybara.server = :puma
 
 RSpec.configure do |config|

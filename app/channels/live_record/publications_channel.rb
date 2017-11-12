@@ -14,7 +14,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       reject_subscription
     end
 
-    if !(model_class && Helpers.queryable_attributes(model_class, current_user).present?)
+    if !(model_class && LiveRecord::BaseChannel::Helpers.queryable_attributes(model_class, current_user).present?)
       respond_with_error(:forbidden, 'You do not have privileges to query')
       reject_subscription
     end
@@ -22,14 +22,14 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
     stream_from "live_record:publications:#{params[:model_name].underscore}", coder: ActiveSupport::JSON do |message|
       newly_created_record = model_class.find(message['attributes']['id'])
 
-      active_record_relation = SearchAdapters.mapped_active_record_relation(
+      active_record_relation = LiveRecord::BaseChannel::SearchAdapters.mapped_active_record_relation(
         model_class: model_class,
         conditions_hash: params[:where].to_h,
         current_user: current_user
       )
 
       if active_record_relation.exists?(id: newly_created_record.id)
-        whitelisted_attributes = Helpers.whitelisted_attributes(newly_created_record, current_user)
+        whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(newly_created_record, current_user)
 
         if whitelisted_attributes.size > 0
           message = { 'action' => 'create', 'attributes' => message['attributes'] }
@@ -46,7 +46,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
 
     if model_class && model_class < ApplicationRecord
 
-      active_record_relation = SearchAdapters.mapped_active_record_relation(
+      active_record_relation = LiveRecord::BaseChannel::SearchAdapters.mapped_active_record_relation(
         model_class: model_class,
         conditions_hash: params[:where].to_h,
         current_user: current_user,
@@ -61,7 +61,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
       # we `transmmit` a message back to client for each matching record
       active_record_relation.find_each do |record|
         # but first, check for the authorised attributes, if exists
-        whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
+        whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
 
         if whitelisted_attributes.size > 0
           message = { 'action' => 'create', 'attributes' => record.attributes }

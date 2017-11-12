@@ -17,19 +17,23 @@ Gem::Specification.new do |s|
   s.add_dependency 'rails', '>= 5.0.0', '< 5.2'
 
   s.add_development_dependency 'rails', '~> 5.1'
-  s.add_development_dependency 'bundler', '~> 1.3'
-  s.add_development_dependency 'rspec-rails', '~> 3.6'
-  s.add_development_dependency 'combustion', '~> 0.7'
-  s.add_development_dependency 'byebug', '~> 9.0'
-  s.add_development_dependency 'sqlite3', '~> 1.3'
-  s.add_development_dependency 'redis', '~> 3.3'
   s.add_development_dependency 'puma', '~> 3.10'
-  s.add_development_dependency 'jquery-rails', '~> 4.3'
+  s.add_development_dependency 'bundler', '~> 1.3'
+  s.add_development_dependency 'byebug', '~> 9.0'
+
   s.add_development_dependency 'sprockets-rails', '~> 3.2'
   s.add_development_dependency 'coffee-rails', '~> 4.2'
+  s.add_development_dependency 'jquery-rails', '~> 4.3'
   s.add_development_dependency 'jbuilder', '~> 2.7'
+
+  s.add_development_dependency 'sqlite3', '~> 1.3'
+  s.add_development_dependency 'redis', '~> 3.3'
+
+  s.add_development_dependency 'rspec-rails', '~> 3.6'
+  s.add_development_dependency 'combustion', '~> 0.7'
   s.add_development_dependency 'chromedriver-helper', '~> 1.1'
   s.add_development_dependency 'selenium-webdriver', '~> 3.5'
   s.add_development_dependency 'faker', '~> 1.8'
   s.add_development_dependency 'database_cleaner', '~> 1.6'
+  s.add_development_dependency 'timecop', '0.9.1'
 end

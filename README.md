@@ -30,7 +30,7 @@
   * `is_enabled:boolean`
 * on the JS client-side:
 
-### Subscribing to Record Creation
+### Subscribing to Records Creation
   ```js
   // subscribe and auto-receive newly created Book records from the Rails server
   LiveRecord.Model.all.Book.subscribe()
@@ -48,6 +48,28 @@
     console.log(this);
   })
   ```
+
+### Subscribing to Records Creation/Updates
+
+  ```js
+  // auto-load newly created Book records OR newly updated Book records
+  LiveRecord.Model.all.Book.autoload()
+
+  // ... or also load all Book records as well, and then subscribes for new ones that will be created / updated
+  // LiveRecord.Model.all.Book.autoload({reload: true})
+
+  // ...or only those which are enabled (you can also combine this with `reload: true`)
+  // LiveRecord.Model.all.Book.autoload({where: {is_enabled_eq: true}})
+
+  // now, we can just simply add a "create_or_update" callback, to apply our own logic whenever a new Book record is streamed from the backend
+  LiveRecord.Model.all.Book.addCallback('after:createOrUpdate', function() {
+    // let's say you have a code here that adds this new Book on the page
+    // `this` refers to the Book record that has been created / updated
+    console.log(this);
+  })
+  ```
+
+> Now you may be wondering what the differences between `autoload()` and `subscribe()` are. Simply put, `subscribe()` only receives NEWLY CREATED records, while `autoload()` receives both CREATED and UPDATED records. Let's say your JS-client has `subscribe({where: {is_enabled_eq: true}})`. You only then receive NEW records that are "enabled", however you won't receive OLD records that were "disabled" upon creation, but then got updated to be "enabled". Now, this is where you use `autoload({where: {is_enabled_eq: true}})` instead.
 
 ### Subscribing to Record Updates/Destroy
 
@@ -127,7 +149,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.2.8'
+    gem 'live_record', '~> 0.2.9'
     ```
 
 2. Run:
@@ -371,9 +393,9 @@
     })
     ```
 
-    ### Example 3 - Using `Subscribe({reload: true})`
+    ### Example 3 - Using `subscribe({reload: true})` or `autoload({reload: true})`
 
-    > You may also load records from the backend by using `subscribe({reload: true})`. `subscribe()` just auto-loads NEW records that will be created, while `subscribe({reload: true})` first loads ALL records (subject to its {where: ...} condition), and then also auto-loads new records that will be created
+    > You may also load records from the backend by using `subscribe({reload: true})`. `subscribe()` just auto-loads NEW records that will be created, while `subscribe({reload: true})` first loads ALL records (subject to its {where: ...} condition), and then also auto-fetch new records that will be created. `autoload({reload: true})` can also be used instead of `subscribe({reload: true})`.
 
     ```js
     var subscription = LiveRecord.Model.all.Book.subscribe({
@@ -387,12 +409,12 @@
     });
     ```
 
-    > Take note however that `subscribe()` above not only LOADS but also SUBSCRIBES! See 9. below for details
+    > Take note however that `subscribe()` and `autoload()` not only LOADS but also SUBSCRIBES! See 9. below for details
 
-9. To automatically receive new Book records, and/or also load the old ones, you may subscribe:
+9.a. To automatically receive new Book records, you may subscribe:
 
     ```js
-    // subscribe and auto-fetches newly created Book records from the backend
+    // subscribe and auto-fetch newly created Book records from the backend
     var subscription = LiveRecord.Model.all.Book.subscribe();
 
     // ...or also load all Book records (not just the new ones).
@@ -418,66 +440,113 @@
     LiveRecord.Model.all.Book.unsubscribe(subscription);
     ```
 
-    ### Ransack Search Queries (Optional)
+9.b. To automatically receive new/updated Book records, you may autoload:
 
-      * If you need more complex queries to pass into the `.subscribe(where: { ... })` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
-      * For example you can then do:
-        ```js
-        // querying upon the `belongs_to :user`
-        subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled_eq: true}});
+    ```js
+    // subscribe and auto-fetch newly created / updated Book records from the backend
+    var subscription = LiveRecord.Model.all.Book.autoload();
 
-        // or querying "OR" conditions
-        subscription = LiveRecord.Model.all.Book.subscribe({where: {title_eq: 'I am Batman', content_eq: 'I am Batman', m: 'or'}});
-        ```
+    // ...or also load all Book records (not just the new ones).
+    // useful for populating records at the start, and therefore you may skip using `LiveRecord.helpers.loadRecords()` already
+    // subscription = LiveRecord.Model.all.Book.autoload({reload: true});
 
-      #### Model File (w/ Ransack) Example
+    // ...or subscribe only to certain conditions (i.e. when `is_enabled` attribute value is `true`)
+    // For the list of supported operators (like `..._eq`), see JS API `MODEL.autoload(CONFIG)` below
+    // subscription = LiveRecord.Model.all.Book.autoload({where: {is_enabled_eq: true}});
 
-      ```ruby
-      # app/models/book.rb
-      class Book < ApplicationRecord
-        include LiveRecord::Model::Callbacks
-        has_many :live_record_updates, as: :recordable, dependent: :destroy
+    // you may choose to combine both `where` and `reload` arguments described above
 
-        def self.live_record_whitelisted_attributes(book, current_user)
-          [:id, :title, :is_enabled]
-        end
+    // now, we can just simply add a "createOrUpdate" callback, to apply our own logic whenever a new/updated Book record is streamed from the backend
+    LiveRecord.Model.all.Book.addCallback('after:createOrUpdate', function() {
+      // let's say you have a code here that adds this new Book on the page
+      // `this` refers to the Book record that has been created/updated
+      console.log(this);
+    })
 
-        ## this method will be invoked when `subscribe()` is called
-        ## but, you should not use this method when using `ransack` gem!
-        ## ransack's methods like `ransackable_attributes` below will be invoked instead
-        # def self.live_record_queryable_attributes(book, current_user)
-        #   [:id, :title, :is_enabled]
-        # end
+    // you may also add callbacks specific to this `subscription`, as you may want to have multiple subscriptions. Then, see JS API `MODEL.autoload(CONFIG)` below for information
 
-        private
-
-        # see ransack gem for more details regarding Authorization: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
-
-        # this method will be invoked when `subscribe()` is called
-        # LiveRecord passes the `current_user` into `auth_object`, so you can access `current_user` inside below
-        def self.ransackable_attributes(auth_object = nil)
-          column_names + _ransackers.keys
-        end
-      end
-      ```
-
-    ### Reconnection Streaming For New Records (when client got disconnected)
-
-    * To be able to stream newly created records upon reconnection, the only requirement is that you should have a `created_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `created_at` with the following
-
-    ```bash
-    # this will create a file under db/migrate folder, then edit that file (see the ruby code below)
-    rails generate migration add_created_at_index_to_MODELNAME
+    // you may also want to unsubscribe as you wish
+    LiveRecord.Model.all.Book.unsubscribe(subscription);
     ```
 
-    ```ruby
-    # db/migrate/2017**********_add_created_at_index_to_MODELNAME.rb
-    class AddCreatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0] # or 5.1, etc
-      def change
-        add_index :TABLENAME, :created_at
-      end
+### Ransack Search Queries (Optional)
+
+  * If you need more complex queries to pass into the `.subscribe(where: { ... })` or `.autoload({where: {...}})` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
+  * For example you can then do:
+    ```js
+    // querying upon the `belongs_to :user`
+    subscription = LiveRecord.Model.all.Book.subscribe({where: {user_is_admin_eq: true, is_enabled_eq: true}});
+
+    // or querying "OR" conditions
+    subscription = LiveRecord.Model.all.Book.subscribe({where: {title_eq: 'I am Batman', content_eq: 'I am Batman', m: 'or'}});
+    ```
+
+  #### Model File (w/ Ransack) Example
+
+  ```ruby
+  # app/models/book.rb
+  class Book < ApplicationRecord
+    include LiveRecord::Model::Callbacks
+    has_many :live_record_updates, as: :recordable, dependent: :destroy
+
+    def self.live_record_whitelisted_attributes(book, current_user)
+      [:id, :title, :is_enabled]
     end
-    ```
+
+    ## this method will be invoked when `subscribe()` or `autoload()` is called
+    ## but, you should not use this method when using `ransack` gem!
+    ## ransack's methods like `ransackable_attributes` below will be invoked instead
+    # def self.live_record_queryable_attributes(book, current_user)
+    #   [:id, :title, :is_enabled]
+    # end
+
+    private
+
+    # see ransack gem for more details regarding Authorization: https://github.com/activerecord-hackery/ransack#authorization-whitelistingblacklisting
+
+    # this method will be invoked when `subscribe()` or `autoload()` is called
+    # LiveRecord passes the `current_user` into `auth_object`, so you can access `current_user` inside below
+    def self.ransackable_attributes(auth_object = nil)
+      column_names + _ransackers.keys
+    end
+  end
+  ```
+
+### Reconnection Streaming For `subscribe()` (when client got disconnected)
+
+* To be able to restream newly created records upon reconnection, the only requirement is that you should have a `created_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `created_at` with the following
+
+```bash
+# this will create a file under db/migrate folder, then edit that file (see the ruby code below)
+rails generate migration add_created_at_index_to_MODELNAME
+```
+
+```ruby
+# db/migrate/2017**********_add_created_at_index_to_MODELNAME.rb
+class AddCreatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0] # or 5.1, etc
+  def change
+    add_index :TABLENAME, :created_at
+  end
+end
+```
+
+### Reconnection Streaming For `autoload()` (when client got disconnected)
+
+* To be able to restream newly created/updated records upon reconnection, the only requirement is that you should have a `updated_at` attribute on your Models, which by default should already be there. However, to speed up queries, I highly suggest to add index on `updated_at` with the following
+
+```bash
+# this will create a file under db/migrate folder, then edit that file (see the ruby code below)
+rails generate migration add_updated_at_index_to_MODELNAME
+```
+
+```ruby
+# db/migrate/2017**********_add_created_at_index_to_MODELNAME.rb
+class AddUpdatedAtIndexToMODELNAME < ActiveRecord::Migration[5.0] # or 5.1, etc
+  def change
+    add_index :TABLENAME, :updated_at
+  end
+end
+```
 
 ## Plugins
 
@@ -541,9 +610,6 @@
   * `hasMany` and `belongsTo` `modelName` above should be a valid defined `LiveRecord.Model`
   * returns the newly created `MODEL`
 
-### `MODEL.all`
-  * Object of which properties are IDs of the records
-
 ### `MODEL.subscribe(CONFIG)`
   * `CONFIG` (Object, Optional)
     * `reload`: (Boolean, Default: false)
@@ -554,6 +620,7 @@
       * `on:disconnect`: (function Object)
       * `before:create`: (function Object; function argument = record)
       * `after:create`: (function Object; function argument = record)
+  * returns an ActionCable subscription object
   * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
   * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the new ones.
   * you can also pass in `callbacks` (see above). These callbacks are only applicable to this subscription, and is independent of the Model and Instance callbacks.
@@ -575,8 +642,31 @@
     * `matches` matches using SQL `LIKE`; i.e. `title_matches: '%Harry Potter%'`
     * `does_not_match` does not match using SQL `NOT LIKE`; i.e. `title_does_not_match: '%Harry Potter%'`
 
+### `MODEL.autoload(CONFIG)`
+  * `CONFIG` (Object, Optional)
+    * `reload`: (Boolean, Default: false)
+    * `where`: (Object)
+      * `ATTRIBUTENAME_OPERATOR`: (Any Type)
+    * `callbacks`: (Object)
+      * `on:connect`: (function Object)
+      * `on:disconnect`: (function Object)
+      * `before:createOrUpdate`: (function Object; function argument = record)
+      * `after:createOrUpdate`: (function Object; function argument = record)
+  * returns an ActionCable subscription object
+  * subscribes to the `LiveRecord::AutoloadsChannel`, which then automatically receives new/updated records from the backend.
+  * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the future new/updated ones.
+  * you can also pass in `callbacks` (see above). These callbacks are only applicable to this subscription, and is independent of the Model and Instance callbacks.
+  * autoload **creates** a record instance to the JS-store if the record does not yet exist, while it just **updates** the record instance if already in the store.
+  * `ATTRIBUTENAME_OPERATOR` means something like (for example): `is_enabled_eq`, where `is_enabled` is the `ATTRIBUTENAME` and `eq` is the `OPERATOR`.
+    * you can have as many `ATTRIBUTENAME_OPERATOR` as you like, but keep in mind that the logic applied to them is "AND", and not "OR". For "OR" conditions, use `ransack`
+
+  > Supported query operators are the same as [`subscribe()` above](#list-of-default-supported-query-operators).
+
 ### `MODEL.unsubscribe(SUBSCRIPTION)`
   * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
+
+### `MODEL.all`
+    * Object of which properties are IDs of the records
 
 ### `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
@@ -599,7 +689,7 @@
 ### `MODELINSTANCE.subscribe(config)`
   * `CONFIG` (Object, Optional)
     * `reload`: (Boolean, Default: false)
-  * subscribes to the `LiveRecord::ChangesChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:response_error` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
+  * subscribes to the `LiveRecord::ChangesChannel`. This instance should already be subscribed by default after being stored, unless there is a `on:responseError` or manually `unsubscribed()` which then you should manually call this `subscribe()` function after correctly handling the response error, or whenever desired.
   * when `reload: true`, the record is forced reloaded to make sure all attributes are in-sync
   * returns the `subscription` object (the ActionCable subscription object itself)
 
@@ -652,6 +742,8 @@
 ## TODOs
 * Change `feature` specs into `system` specs after [this rspec-rails pull request](https://github.com/rspec/rspec-rails/pull/1813) gets merged.
 
+* Rename `subscribe()` and `autoload()` into something more descriptive and intuitive, as both of them actually "subscribes". Perhaps rename `subscribe()` into `subscribe({to: 'create'})` and rename `autoload()` into `subscribe({to: 'createOrUpdate'})`?
+
 ## Contributing
 * pull requests and forks are very much welcomed! :) Let me know if you find any bug! Thanks
 
@@ -659,6 +751,9 @@
 * MIT
 
 ## Changelog
+* 0.3.0
+  * Ability to now auto-load **created** or **updated** records that match your specified "where" condition.
+  * See e
 * 0.2.8
   * You can now specify `:id` into `live_record_whitelisted_attributes` for verbosity; used to be automatically-included by default. Needed to do this otherwise there was this minor bug where `subscribe()` still receives records (having just `:id` attribute though) even when it is specified to be not-authorized.
   * fixed minor bug when `live_record_whitelisted_attributes` is not returning anything, throwing a `NoMethodError`

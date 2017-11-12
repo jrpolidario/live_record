@@ -5,7 +5,7 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
 
   def subscribed
     find_record_from_params(params) do |record|
-      whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
+      whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
 
       if whitelisted_attributes.present?
         stream_for record, coder: ActiveSupport::JSON do |message|
@@ -14,7 +14,7 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
           rescue ActiveRecord::RecordNotFound
           end
 
-          whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
+          whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
 
           if whitelisted_attributes.size > 0
             response = filtered_message(message, whitelisted_attributes)
@@ -35,7 +35,7 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
     params = data.symbolize_keys
 
     find_record_from_params(params) do |record|
-      whitelisted_attributes = Helpers.whitelisted_attributes(record, current_user)
+      whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
 
       if whitelisted_attributes.size > 0
         live_record_updates = nil

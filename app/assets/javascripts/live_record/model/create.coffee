@@ -62,6 +62,84 @@ LiveRecord.Model.create = (config) ->
 
   Model.subscriptions = []
 
+  Model.autoload = (config = {}) ->
+    config.callbacks ||= {}
+    config.reload ||= false
+
+    subscription = App.cable.subscriptions.create(
+      {
+        channel: 'LiveRecord::AutoloadsChannel'
+        model_name: Model.modelName
+        where: config.where
+      },
+
+      connected: ->
+        # if forced reload of all records after subscribing, reload only once at the very start of connection, and no longer when reconnecting
+        if config.reload
+          config.reload = false
+          @syncRecords()
+
+        if @liveRecord._staleSince != undefined
+          @syncRecords()
+
+        config.callbacks['on:connect'].call(this) if config.callbacks['on:connect']
+
+      disconnected: ->
+        @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
+        config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
+
+      received: (data) ->
+        if data.error
+          @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
+          @onError[data.error.code].call(this, data)
+        else
+          @onAction[data.action].call(this, data)
+
+      onAction:
+        create_or_update: (data) ->
+          record = Model.all[data.attributes.id]
+
+          # if record already exists
+          if record
+            doesRecordAlreadyExist = true
+          # else if not
+          else
+            record = new Model(data.attributes)
+            doesRecordAlreadyExist = false
+
+          config.callbacks['before:create_or_update'].call(this, record) if config.callbacks['before:create_or_update']
+          if doesRecordAlreadyExist
+            record.update(data.attributes)
+          else
+            record.create()
+          console.log(record)
+          config.callbacks['after:create_or_update'].call(this, record) if config.callbacks['after:create_or_update']
+
+      # handler for received() callback above
+      onError:
+        forbidden: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
+        bad_request: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
+
+      syncRecords: ->
+        @perform(
+          'sync_records',
+          model_name: Model.modelName,
+          where: config.where,
+          stale_since: @liveRecord._staleSince
+        )
+        @liveRecord._staleSince = undefined
+    )
+
+    subscription.liveRecord = {}
+    subscription.liveRecord.modelName = Model.modelName
+    subscription.liveRecord.where = config.where
+    subscription.liveRecord.callbacks = config.callbacks
+
+    @subscriptions.push(subscription)
+    subscription
+
   Model.subscribe = (config = {}) ->
     config.callbacks ||= {}
     config.reload ||= false

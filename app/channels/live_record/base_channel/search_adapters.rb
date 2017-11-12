@@ -1,4 +1,4 @@
-class LiveRecord::PublicationsChannel
+class LiveRecord::BaseChannel
 
   module SearchAdapters
     def self.mapped_active_record_relation(**args)
