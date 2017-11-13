@@ -16,6 +16,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'User sees live changes (updates) of post records', js: true do
     visit '/posts'
 
+    sleep(1)
+
     execute_script("LiveRecord.helpers.loadRecords({ modelName: 'Post' });")
 
     post1_title_td = find('td', text: post1.title, wait: 10)
@@ -32,6 +34,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
   scenario 'User sees live changes (destroy) of post records', js: true do
     visit '/posts'
+
+    sleep(1)
 
     execute_script("LiveRecord.helpers.loadRecords({ modelName: 'Post' });")
 
@@ -50,6 +54,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   # see spec/internal/app/models/post.rb to view specified whitelisted attributes
   scenario 'User sees live changes (updates) of post records, but only changes from whitelisted authorised attributes', js: true do
     visit '/posts'
+
+    sleep(1)
 
     execute_script("LiveRecord.helpers.loadRecords({ modelName: 'Post' });")
 
@@ -74,6 +80,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
   scenario 'JS-Client can access Model associations record objects in its current store', js: true do
     visit '/posts'
+
+    sleep(1)
 
     execute_script(
       <<-eos
@@ -114,6 +122,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records where specified "conditions" matched', js: true do
     visit '/posts'
 
+    sleep(1)
+
     execute_script("LiveRecord.Model.all.Post.subscribe({ where: { is_enabled_eq: true }});")
 
     sleep(1)
@@ -135,6 +145,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
     visit '/posts'
 
+    sleep(1)
+
     execute_script("LiveRecord.Model.all.Post.subscribe({ where: { is_enabled_eq: true, content_eq: 'somecontent' }});")
 
     sleep(1)
@@ -154,6 +166,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live new (create) post records having only the whitelisted authorised attributes', js: true do
     visit '/posts'
 
+    sleep(1)
+
     execute_script("LiveRecord.Model.all.Post.subscribe();")
 
     sleep(1)
@@ -168,6 +182,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
   scenario 'JS-Client receives live autoloaded (create or update) post records where specified "conditions" matched', js: true do
     visit '/posts'
+
+    sleep(1)
 
     # prepopulate
     disabled_post_that_will_be_enabled = create(:post, is_enabled: false)
@@ -195,6 +211,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
   scenario 'JS-Client receives live autoloaded (create or update) post records where only considered "conditions" are the whitelisted authorised attributes', js: true do
     visit '/posts'
+
+    sleep(1)
 
     # prepopulate
     updated_post1 = create(:post, is_enabled: false, content: 'somecontent')
@@ -227,6 +245,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client receives live autoloaded (create or update) post records having only the whitelisted authorised attributes', js: true do
     visit '/posts'
 
+    sleep(1)
+
     # prepopulate
     updated_post = create(:post, is_enabled: true, title: 'sometitle', content: 'somecontent')
 
@@ -251,6 +271,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   scenario 'JS-Client should not have shared callbacks for those callbacks defined only for a particular post record', js: true do
     visit '/posts'
 
+    sleep(1)
+
     execute_script("LiveRecord.helpers.loadRecords({ modelName: 'Post' });")
 
     # wait first for all posts to be loaded
@@ -270,6 +292,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
   scenario 'JS-Client should receive response :forbidden error when using `subscribe()` but that the current_user is forbidden to do so', js: true do
     visit '/posts'
+
+    sleep(1)
 
     execute_script("LiveRecord.Model.all.Post.subscribe();")
 
@@ -293,6 +317,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
       post_that_will_be_updated_while_disconnected_2 = create(:post, is_enabled: true)
 
       visit '/posts'
+
+      sleep(1)
 
       execute_script(
         <<-eos
@@ -330,6 +356,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
 
     scenario 'JS-Client receives all post records created (matching the conditions) during the time it got disconnected', js: true do
       visit '/posts'
+
+      sleep(1)
 
       post_created_before_disconnection = nil
       post_created_while_disconnected_1 = nil
@@ -402,6 +430,8 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
       end
 
       visit '/posts'
+
+      sleep(1)
 
       execute_script("LiveRecord.Model.all.Post.autoload({where: {is_enabled_eq: true}});")
 
