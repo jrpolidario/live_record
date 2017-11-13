@@ -97,7 +97,7 @@
     // `this` refers to the Book record that has been updated
 
     console.log(this.attributes);
-    // this book record should have been updated with all other possible whitelisted attributes even if you just initally passed in only the ID; thus console.log above would output below
+    // this book record should have been updated with all other possible whitelisted attributes even if you just initially passed in only the ID; thus console.log above would output below
     // {id: 1, title: 'Harry Potter', author: 'J.K. Rowling', is_enabled: true, created_at: '2017-08-02T12:39:49.238Z', updated_at: '2017-08-02T12:39:49.238Z'}
 
     console.log(this.changes)
@@ -132,7 +132,8 @@
     end
 
     def self.live_record_queryable_attributes(current_user)
-      # Add attributes to this array that you would like `current_user` to be able to query upon on the `subscribe({where: {...}}) function`
+      # Add attributes to this array that you would like `current_user` to be able to query upon
+      # on the `subscribe({where: {...}})` and `autoload({where: {...}})` functions
       # empty array means not-authorised
       if current_user.isAdmin?
         [:id, :title, :author, :created_at, :updated_at, :reference_id, :origin_address]
