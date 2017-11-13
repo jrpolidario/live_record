@@ -7,5 +7,8 @@ rvm:
   - 2.2.7
   - 2.3.4
   - 2.4.1
+env:
+  # this seems to have fixed headless-chrome from occassionally hanging when it gets booted by rspec
+  - DBUS_SESSION_BUS_ADDRESS=/dev/null
 before_install:
   - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
