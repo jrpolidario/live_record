@@ -150,7 +150,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.3.1'
+    gem 'live_record', '~> 0.3.2'
     ```
 
 2. Run:
@@ -207,7 +207,7 @@
       end
 
       def self.live_record_queryable_attributes(current_user)
-        # Add attributes to this array that you would like current_user to query upon when using `.subscribe({where: {...})`
+        # Add attributes to this array that you would like current_user to query upon when using `.subscribe({where: {...})` and `.autoload({where: {...}})`
         # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
         [:id, :title, :author, :created_at, :updated_at]
       end
@@ -752,6 +752,8 @@ end
 * MIT
 
 ## Changelog
+* 0.3.2
+  * fixed `autoload()` `before:createOrUpdate` and `after:createOrUpdate` callbacks not triggering`
 * 0.3.1
   * removed a `console.log()` debugging code
 * 0.3.0

@@ -46,7 +46,7 @@ class LiveRecord::AutoloadsChannel < LiveRecord::BaseChannel
           whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(new_or_updated_record, current_user)
 
           if whitelisted_attributes.size > 0
-            message = { 'action' => 'create_or_update', 'attributes' => new_or_updated_record.attributes }
+            message = { 'action' => 'createOrUpdate', 'attributes' => new_or_updated_record.attributes }
             response = filtered_message(message, whitelisted_attributes)
             transmit response if response.present?
           end
@@ -79,7 +79,7 @@ class LiveRecord::AutoloadsChannel < LiveRecord::BaseChannel
         whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
 
         if whitelisted_attributes.size > 0
-          message = { 'action' => 'create_or_update', 'attributes' => record.attributes }
+          message = { 'action' => 'createOrUpdate', 'attributes' => record.attributes }
           response = filtered_message(message, whitelisted_attributes)
           transmit response if response.present?
         end

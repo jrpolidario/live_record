@@ -31,7 +31,7 @@ class <%= class_name %> < <%= parent_class_name.classify %>
     #
     # Add attributes to this array that you would like current_user client to be able to query upon when "subscribing"
     # Defaults to empty array, thereby blocking everything by default, only unless explicitly stated here so.
-    # i.e. if a current_user client subscribes to "new records creation" using `.subscribe({where: {...}})`,
+    # i.e. if a current_user client subscribes using `.subscribe({where: {...}})` or `.autoload({where: {...}})`,
     # then only these attributes will be considered in the "{where: ...}" argument
     # if you're using `ransack` gem, use `ransackable_attributes`
     # Empty array means unauthorized

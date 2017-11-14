@@ -96,7 +96,7 @@ LiveRecord.Model.create = (config) ->
           @onAction[data.action].call(this, data)
 
       onAction:
-        create_or_update: (data) ->
+        createOrUpdate: (data) ->
           record = Model.all[data.attributes.id]
 
           # if record already exists
@@ -107,12 +107,12 @@ LiveRecord.Model.create = (config) ->
             record = new Model(data.attributes)
             doesRecordAlreadyExist = false
 
-          config.callbacks['before:create_or_update'].call(this, record) if config.callbacks['before:create_or_update']
+          config.callbacks['before:createOrUpdate'].call(this, record) if config.callbacks['before:createOrUpdate']
           if doesRecordAlreadyExist
             record.update(data.attributes)
           else
             record.create()
-          config.callbacks['after:create_or_update'].call(this, record) if config.callbacks['after:create_or_update']
+          config.callbacks['after:createOrUpdate'].call(this, record) if config.callbacks['after:createOrUpdate']
 
       # handler for received() callback above
       onError:
