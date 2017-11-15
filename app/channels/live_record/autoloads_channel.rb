@@ -61,8 +61,8 @@ class LiveRecord::AutoloadsChannel < LiveRecord::BaseChannel
     model_class = params[:model_name].safe_constantize
 
     if model_class && model_class < ApplicationRecord
-      is_being_reloaded = params[:stale].blank?
-      is_being_synced = params[:stale].present?
+      is_being_reloaded = params[:stale_since].blank?
+      is_being_synced = params[:stale_since].present?
 
       active_record_relation = LiveRecord::BaseChannel::SearchAdapters.mapped_active_record_relation(
         model_class: model_class,
