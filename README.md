@@ -772,7 +772,7 @@ end
 
 ## Changelog
 * 0.3.3
-  * now allows creating `class` and `instance` methods when creating a LiveRecord Model
+  * now allows creating [`class` and `instance` methods](#example-2---model--associations--callbacks--methods) when creating a LiveRecord Model
 * 0.3.2
   * fixed `autoload()` `before:createOrUpdate` and `after:createOrUpdate` callbacks not triggering`
 * 0.3.1
@@ -799,7 +799,7 @@ end
     * `MODELINSTANCE.subscribe({reload: true})` to immediately reload the record and make sure it's in-sync
 * 0.2.3
   * IMPORTANT! renamed callback from `on:response_error` to `on:responseError` for conformity. So please update your code accordingly.
-  * added [associations](#example-2---model--callbacks--associations):
+  * added [associations](#example-2---model--associations--callbacks--methods):
     * `hasMany` which allows you to do `bookInstance.reviews()`
     * `belongsTo` which allows you to do `bookInstance.user()`
   * fixed `loadRecords()` throwing an error when there is no response
