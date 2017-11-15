@@ -688,7 +688,7 @@ end
   * unsubscribes to the `LiveRecord::PublicationsChannel`, thereby will not be receiving new records anymore.
 
 ### `MODEL.all`
-    * Object of which properties are IDs of the records
+  * Object of which properties are IDs of the records
 
 ### `new LiveRecord.Model.all.MODELNAME(ATTRIBUTES)`
   * `ATTRIBUTES` (Object)
