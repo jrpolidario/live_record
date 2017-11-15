@@ -1,15 +1,32 @@
 <% module_namespacing do -%>
 LiveRecord.Model.create(
   {
-    modelName: '<%= file_name.singularize.camelcase %>',
+    modelName: '<%= singular_table_name.camelcase %>',
     plugins: {
+      // remove this line if you're not using LiveDOM
       LiveDOM: true
     },
-    // See TODO: URL_TO_DOCUMENTATION for supported callbacks
-    // Add Callbacks (callback name => array of functions)
+
+    // More configurations below. See https://github.com/jrpolidario/live_record#example-1---model
+    // belongsTo: {
+    //   user: { foreignKey: 'user_id', modelName: 'User' }
+    // },
+    // hasMany: {
+    //   books: { foreignKey: '<%= singular_table_name %>_id', modelName: 'Book' }
+    // },
     // callbacks: {
     //   'on:disconnect': [],
-    //   'after:update': [],
+    //   'after:update': []
+    // },
+    // classMethods: {
+    //   someMethod: function(arg1, arg2) {
+    //     return 'somevalue';
+    //   }
+    // },
+    // instanceMethods: {
+    //   someMethod: function(arg1, arg2) {
+    //     return 'somevalue';
+    //   }
     // }
   }
 )

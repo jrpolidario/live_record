@@ -6,6 +6,10 @@ LiveRecord.Model.create(
     },
     plugins: {
       LiveDOM: true
+    },
+    classMethods: {
+    },
+    instanceMethods: {
     }
   }
 )

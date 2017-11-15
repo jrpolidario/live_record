@@ -150,7 +150,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.3.2'
+    gem 'live_record', '~> 0.3.3'
     ```
 
 2. Run:
@@ -261,7 +261,7 @@
     )
     ```
 
-    ### Example 2 - Model + Callbacks + Associations
+    ### Example 2 - Model + Associations + Callbacks + Methods
 
     ```js
     // app/assets/javascripts/books.js
@@ -289,6 +289,20 @@
               console.log(this); // `this` refers to the current `Book` record that has just been updated with changes synced from the backend
             }
           ]
+        },
+        // allows you to do LiveRecord.Model.all.Book.yourOwnNamedClassMethod('arg1', 'arg2')
+        classMethods: {
+          yourOwnNamedClassMethod: function(arg1, arg2) {
+            console.log(this); // `this` refers to `Book` Model
+            return 'somevalue'
+          }
+        },
+        // allows you to do LiveRecord.Model.all.Book.all[1].yourOwnNamedInstanceMethod('arg1', 'arg2')
+        instanceMethods: {
+          yourOwnNamedInstanceMethod: function(arg1, arg2) {
+            console.log(this); // `this` refers to a `Book` record
+            return 'somevalue'
+          }
         }
       }
     )
@@ -605,10 +619,15 @@ end
       * `after:update`: (Array of functions)
       * `before:destroy`: (Array of functions)
       * `after:destroy`: (Array of functions)
+    * `classMethods`: (Object)
+      * `CLASSMETHODNAME`: (function)
+    * `instanceMethods`: (Object)
+      * `INSTANCEMETHODNAME`: (function)
     * `plugins`: (Object)
       * `LiveDOM`: (Boolean)
   * creates a `MODEL` and stores it into `LiveRecord.Model.all` array
   * `hasMany` and `belongsTo` `modelName` above should be a valid defined `LiveRecord.Model`
+  * `CLASSMETHODNAME` and `INSTANCEMETHODNAME` can be whatever name you wish, only except some reserved names used by LiveRecord (will throw an error if reserved name is used)
   * returns the newly created `MODEL`
 
 ### `MODEL.subscribe(CONFIG)`
@@ -752,6 +771,8 @@ end
 * MIT
 
 ## Changelog
+* 0.3.3
+  * now allows creating `class` and `instance` methods when creating a LiveRecord Model
 * 0.3.2
   * fixed `autoload()` `before:createOrUpdate` and `after:createOrUpdate` callbacks not triggering`
 * 0.3.1

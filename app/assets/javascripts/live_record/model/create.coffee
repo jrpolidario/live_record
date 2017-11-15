@@ -213,6 +213,11 @@ LiveRecord.Model.create = (config) ->
     @subscriptions.splice(index, 1)
     subscription
 
+  # create class methods
+  for methodKey, methodValue of config.classMethods
+    throw new Error('Cannot use reserved name as class method: ', methodKey) if Model[methodKey] != undefined
+    Model[methodKey] = methodValue
+
   Model.prototype.subscribe = (config = {}) ->
     return @subscription if @subscription != undefined
 
@@ -381,6 +386,11 @@ LiveRecord.Model.create = (config) ->
 
   Model.prototype._unsetChanges = () ->
     delete this['changes']
+
+  # create instance methods
+  for methodKey, methodValue of config.instanceMethods
+    throw new Error('Cannot use reserved name as instance method: ', methodKey) if Model.prototype[methodKey] != undefined
+    Model.prototype[methodKey] = methodValue
 
   # AFTER MODEL INITIALISATION
 

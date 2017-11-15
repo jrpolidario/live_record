@@ -17,6 +17,14 @@ LiveRecord.Model.create(
     # callbacks: {
     #   'on:disconnect': [],
     #   'after:update': [],
+    # },
+    # classMethods: {
+    #   someMethod: (arg1, arg2) ->
+    #     return 'somevalue'
+    # },
+    # instanceMethods: {
+    #   someMethod: (arg1, arg2) ->
+    #     return 'somevalue'
     # }
   }
 )
