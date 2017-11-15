@@ -40,11 +40,14 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
     end
   end
 
+  # TODO: split up sync_records action because it currently both handles "syncing" and "reloading"
   def sync_records(data)
     params = data.symbolize_keys
     model_class = params[:model_name].safe_constantize
 
     if model_class && model_class < ApplicationRecord
+      is_being_reloaded = params[:stale].blank?
+      is_being_synced = params[:stale].present?
 
       active_record_relation = LiveRecord::BaseChannel::SearchAdapters.mapped_active_record_relation(
         model_class: model_class,
@@ -52,7 +55,7 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
         current_user: current_user,
       )
 
-      if params[:stale_since].present?
+      if is_being_synced
         active_record_relation = active_record_relation.where(
           'created_at >= ?', DateTime.parse(params[:stale_since]) - LiveRecord.configuration.sync_record_buffer_time
         )
@@ -68,6 +71,12 @@ class LiveRecord::PublicationsChannel < LiveRecord::BaseChannel
           response = filtered_message(message, whitelisted_attributes)
           transmit response if response.present?
         end
+      end
+
+      # if being reloaded, we finally still transmit a "done" action indicating that reloading has just finished
+      if is_being_reloaded
+        response = { 'action' => 'afterReload', 'recordIds' => active_record_relation.pluck(:id) }
+        transmit response
       end
     else
       respond_with_error(:bad_request, 'Not a correct model name')

@@ -640,6 +640,7 @@ end
       * `on:disconnect`: (function Object)
       * `before:create`: (function Object; function argument = record)
       * `after:create`: (function Object; function argument = record)
+      * `after:reload`: (function Object; function argument = recordIds) **Only works with `reload: true`**
   * returns an ActionCable subscription object
   * subscribes to the `LiveRecord::PublicationsChannel`, which then automatically receives new records from the backend.
   * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the new ones.
@@ -672,6 +673,7 @@ end
       * `on:disconnect`: (function Object)
       * `before:createOrUpdate`: (function Object; function argument = record)
       * `after:createOrUpdate`: (function Object; function argument = record)
+      * `after:reload`: (function Object; function argument = recordIds) **Only works with `reload: true`**
   * returns an ActionCable subscription object
   * subscribes to the `LiveRecord::AutoloadsChannel`, which then automatically receives new/updated records from the backend.
   * when `reload: true`, all records (subject to `where` condition above) are immediately loaded, and not just the future new/updated ones.
@@ -773,6 +775,7 @@ end
 ## Changelog
 * 0.3.3
   * now allows creating [`class` and `instance` methods](#example-2---model--associations--callbacks--methods) when creating a LiveRecord Model
+  * added `after:reload` callback to `autoload()` and `subscribe()` when `reload: true` is passed, which triggers once after reloading has finished transmitting all records
 * 0.3.2
   * fixed `autoload()` `before:createOrUpdate` and `after:createOrUpdate` callbacks not triggering`
 * 0.3.1

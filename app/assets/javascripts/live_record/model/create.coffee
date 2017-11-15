@@ -66,6 +66,9 @@ LiveRecord.Model.create = (config) ->
     config.callbacks ||= {}
     config.reload ||= false
 
+    if config.callbacks.afterReload && !config.reload
+      throw new Error('`afterReload` callback only works with `reload: true`')
+
     subscription = App.cable.subscriptions.create(
       {
         channel: 'LiveRecord::AutoloadsChannel'
@@ -114,6 +117,9 @@ LiveRecord.Model.create = (config) ->
             record.create()
           config.callbacks['after:createOrUpdate'].call(this, record) if config.callbacks['after:createOrUpdate']
 
+        afterReload: (data) ->
+          config.callbacks['after:reload'].call(this, data.recordIds) if config.callbacks['after:reload']
+
       # handler for received() callback above
       onError:
         forbidden: (data) ->
@@ -142,6 +148,9 @@ LiveRecord.Model.create = (config) ->
   Model.subscribe = (config = {}) ->
     config.callbacks ||= {}
     config.reload ||= false
+
+    if config.callbacks.afterReload && !config.reload
+      throw new Error('`afterReload` callback only works with `reload: true`')
 
     subscription = App.cable.subscriptions.create(
       {
@@ -178,6 +187,9 @@ LiveRecord.Model.create = (config) ->
           config.callbacks['before:create'].call(this, record) if config.callbacks['before:create']
           record.create()
           config.callbacks['after:create'].call(this, record) if config.callbacks['after:create']
+
+        afterReload: (data) ->
+          config.callbacks['after:reload'].call(this, data.recordIds) if config.callbacks['after:reload']
 
       # handler for received() callback above
       onError:
