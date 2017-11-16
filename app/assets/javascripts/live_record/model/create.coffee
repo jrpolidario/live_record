@@ -32,31 +32,41 @@ LiveRecord.Model.create = (config) ->
     hasMany: config.hasMany
     belongsTo: config.belongsTo
 
-  # getting has_many association records
-  for associationName, associationConfig of Model.associations.hasMany
-    Model.prototype[associationName] = ->
-      self = this
-      associatedModel = LiveRecord.Model.all[associationConfig.modelName]
-      throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
+  # getting has_many association record
+  if Model.associations.hasMany
+    Object.keys(Model.associations.hasMany).forEach((key, index) ->
+      associationName = key
+      associationConfig = Model.associations.hasMany[associationName]
 
-      # TODO: speed up searching for associated records, or use cache-maps
-      associatedRecords = []
+      Model.prototype[associationName] = () ->
+        self = this
+        associatedModel = LiveRecord.Model.all[associationConfig.modelName]
+        throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
 
-      for id, record of associatedModel.all
-        isAssociated = record[associationConfig.foreignKey]() == self.id()
-        associatedRecords.push(record) if isAssociated
+        # TODO: speed up searching for associated records, or use cache-maps
+        associatedRecords = []
 
-      associatedRecords
+        for id, record of associatedModel.all
+          isAssociated = record[associationConfig.foreignKey]() == self.id()
+          associatedRecords.push(record) if isAssociated
+
+        associatedRecords
+    )
 
   # getting belongs_to association record
-  for associationName, associationConfig of Model.associations.belongsTo
-    Model.prototype[associationName] = ->
-      self = this
-      associatedModel = LiveRecord.Model.all[associationConfig.modelName]
-      throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
+  if Model.associations.belongsTo
+    Object.keys(Model.associations.belongsTo).forEach((key, index) ->
+      associationName = key
+      associationConfig = Model.associations.belongsTo[associationName]
 
-      belongsToID = self[associationConfig.foreignKey]()
-      associatedModel.all[belongsToID]
+      Model.prototype[associationName] = () ->
+        self = this
+        associatedModel = LiveRecord.Model.all[associationConfig.modelName]
+        throw new Error('No defined model for "' + associationConfig.modelName + '"') unless associatedModel
+
+        belongsToID = self[associationConfig.foreignKey]()
+        associatedModel.all[belongsToID]
+    )
 
   Model.all = {}
 
@@ -333,9 +343,17 @@ LiveRecord.Model.create = (config) ->
 
   # UPDATE
   Model.prototype.update = (attributes) ->
+    self = this
+
+    # sometimes there are new attributes that were not there yet upon initialization
+    # so when updated() make sure to create helper getter functions for each new attribute as below
+    Object.keys(self.attributes).forEach (attribute_key) ->
+      if Model.prototype[attribute_key] == undefined
+        Model.prototype[attribute_key] = ->
+          @attributes[attribute_key]
+
     @_callCallbacks('before:update', undefined)
 
-    self = this
     Object.keys(attributes).forEach (attribute_key) ->
       self.attributes[attribute_key] = attributes[attribute_key]
 

@@ -776,6 +776,7 @@ end
 * 0.3.3
   * now allows creating [`class` and `instance` methods](#example-2---model--associations--callbacks--methods) when creating a LiveRecord Model
   * added `after:reload` callback to `autoload()` and `subscribe()` when `reload: true` is passed, which triggers once after reloading has finished transmitting all records
+  * fixed nasty weird bug where defined `hasMany` or `belongsTo` associations share the last value, instead of independently being calculated. (i.e. if `Post` `belongsTo` `user` and `category`, `postInstance.user()` returns a value of the returned value of `postInstance.category()`). Bug is caused by `for ... in` loop and now fixed by using `Object.keys().forEach(...)`, where a variable outside a function is being shared in each loop (as it is referenced inside the function) instead of independently being referenced. [Similar problem here](https://stackoverflow.com/questions/1451009/javascript-infamous-loop-issue)
 * 0.3.2
   * fixed `autoload()` `before:createOrUpdate` and `after:createOrUpdate` callbacks not triggering`
 * 0.3.1

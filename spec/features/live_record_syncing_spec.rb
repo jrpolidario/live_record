@@ -8,7 +8,7 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
   let(:post3) { create(:post, user: nil) }
   let!(:users) { [user1, user2] }
   let!(:posts) { [post1, post2, post3] }
-  
+
   scenario 'User sees live changes (updates) of post records', js: true do
     visit '/posts'
 
@@ -280,6 +280,93 @@ RSpec.feature 'LiveRecord Syncing', type: :feature do
     )
 
     sleep(5)
+  end
+
+  scenario 'JS-Client can access defined belongsTo() and hasMany() associations', js: true do
+    # prepopulate
+    category_that_do_not_have_posts = create(:category)
+    category_that_has_posts = create(:category)
+    category_that_has_posts.tap do |category|
+      create(:post, category: category)
+      create(:post, category: category)
+    end
+    user_that_do_not_have_posts = create(:user)
+    user_that_have_posts = create(:user)
+    user_that_have_posts.tap do |user|
+      create(:post, user: user)
+      create(:post, user: user)
+    end
+    post_that_do_not_belong_to_user_nor_category = create(:post, user: nil, category: nil)
+    post_that_belongs_to_user_but_not_category = create(:post, user: create(:user), category: nil)
+    post_that_belongs_to_category_but_not_user = create(:post, category: create(:category), user: nil)
+    post_that_belongs_to_both_category_and_user = create(:post, category: create(:category), user: create(:user))
+
+    visit '/posts'
+
+    execute_script(
+      <<-eos
+      LiveRecord.Model.all.Post.autoload({reload: true});
+      LiveRecord.Model.all.User.autoload({reload: true});
+      LiveRecord.Model.all.Category.autoload({reload: true});
+      eos
+    )
+
+    'wait first for all records to be loaded'.tap do
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Post.all ).length")).to be Post.all.count
+
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.User.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.User.all ).length")).to be User.all.count
+
+      wait before: -> { evaluate_script("Object.keys( LiveRecord.Model.all.Category.all ).length") }, becomes: -> (value) { value == Post.all.count }, duration: 10.seconds
+      expect(evaluate_script("Object.keys( LiveRecord.Model.all.Category.all ).length")).to be Category.all.count
+    end
+
+    'now check if associations are correct / matching'.tap do
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Category.all[#{category_that_do_not_have_posts.id}].posts().map(function(post) {return post.id()})"
+      )).to eq category_that_do_not_have_posts.posts.pluck(:id)
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Category.all[#{category_that_has_posts.id}].posts().map(function(post) {return post.id()})"
+      )).to eq category_that_has_posts.posts.pluck(:id)
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.User.all[#{user_that_do_not_have_posts.id}].posts().map(function(post) {return post.id()})"
+      )).to eq user_that_do_not_have_posts.posts.pluck(:id)
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.User.all[#{user_that_have_posts.id}].posts().map(function(post) {return post.id()})"
+      )).to eq user_that_have_posts.posts.pluck(:id)
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_do_not_belong_to_user_nor_category.id}].user()"
+      )).to eq nil
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_do_not_belong_to_user_nor_category.id}].category()"
+      )).to eq nil
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_user_but_not_category.id}].user().id()"
+      )).to eq post_that_belongs_to_user_but_not_category.user.id
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_user_but_not_category.id}].category()"
+      )).to eq nil
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_category_but_not_user.id}].category().id()"
+      )).to eq post_that_belongs_to_category_but_not_user.category.id
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_category_but_not_user.id}].user()"
+      )).to eq nil
+
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_both_category_and_user.id}].category().id()"
+      )).to eq post_that_belongs_to_both_category_and_user.category.id
+      expect(evaluate_script(
+        "LiveRecord.Model.all.Post.all[#{post_that_belongs_to_both_category_and_user.id}].user().id()"
+      )).to eq post_that_belongs_to_both_category_and_user.user.id
+    end
   end
 
   # see spec/internal/app/models/post.rb to view specified whitelisted attributes
