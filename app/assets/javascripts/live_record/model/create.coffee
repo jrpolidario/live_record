@@ -347,7 +347,7 @@ LiveRecord.Model.create = (config) ->
 
     # sometimes there are new attributes that were not there yet upon initialization
     # so when updated() make sure to create helper getter functions for each new attribute as below
-    Object.keys(self.attributes).forEach (attribute_key) ->
+    Object.keys(attributes).forEach (attribute_key) ->
       if Model.prototype[attribute_key] == undefined
         Model.prototype[attribute_key] = ->
           @attributes[attribute_key]
