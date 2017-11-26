@@ -20,8 +20,8 @@
 
 ## Demo
 
-* https://live-record-example.herokuapp.com/
-* http://playadj.io/ (Online Card Game: Full Demo)
+* https://live-record-example.herokuapp.com/ (Basic Demo)
+* http://playadj.io/ (Full Demo: An Online Card Game)
 
 ## Usage Example
 
