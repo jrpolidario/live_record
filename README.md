@@ -21,6 +21,7 @@
 ## Demo
 
 * https://live-record-example.herokuapp.com/
+* http://playadj.io/ (Online Card Game: Full Demo)
 
 ## Usage Example
 
