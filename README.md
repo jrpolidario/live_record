@@ -142,7 +142,7 @@
       # Add attributes to this array that you would like `current_user` to be able to query upon
       # on the `subscribe({where: {...}})` and `autoload({where: {...}})` functions
       # empty array means not-authorised
-      if current_user.isAdmin?
+      if current_user.is_admin?
         [:id, :title, :author, :created_at, :updated_at, :reference_id, :origin_address]
       else
         []
