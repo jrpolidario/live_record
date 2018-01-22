@@ -62,10 +62,16 @@
   // ...or only those which are enabled (you can also combine this with `reload: true`)
   // LiveRecord.Model.all.Book.autoload({where: {is_enabled_eq: true}})
 
-  // now, we can just simply add a "create_or_update" callback, to apply our own logic whenever a new Book record is streamed from the backend
-  LiveRecord.Model.all.Book.addCallback('after:createOrUpdate', function() {
+  // now, we can just simply add a "create" callback or also an "update" callback, to apply our own logic whenever a new Book record is streamed from the backend
+  LiveRecord.Model.all.Book.addCallback('after:create', function() {
     // let's say you have a code here that adds this new Book on the page
-    // `this` refers to the Book record that has been created / updated
+    // `this` refers to the Book record that has been created
+    console.log(this);
+  })
+
+  LiveRecord.Model.all.Book.addCallback('after:update', function() {
+    // let's say you have a code here that updates this Book on the page
+    // `this` refers to the Book record that has been updated
     console.log(this);
   })
   ```
