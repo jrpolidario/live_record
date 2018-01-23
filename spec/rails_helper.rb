@@ -7,6 +7,8 @@ ActiveRecord::Migration.maintain_test_schema!
 Capybara.javascript_driver = :selenium_chrome_headless # :selenium_chrome
 Capybara.server = :puma
 
+Chromedriver.set_version '2.31'
+
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
   config.include Capybara::DSL
