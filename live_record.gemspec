@@ -14,9 +14,9 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
   s.required_ruby_version = '>= 2.2.2'
 
-  s.add_dependency 'rails', '>= 5.0.0', '< 5.2'
+  s.add_dependency 'rails', '>= 5.0.0', '< 5.3'
 
-  s.add_development_dependency 'rails', '~> 5.1.0'
+  s.add_development_dependency 'rails', '~> 5.2.0'
   s.add_development_dependency 'puma', '~> 3.10'
   s.add_development_dependency 'bundler', '~> 1.3'
   s.add_development_dependency 'byebug', '~> 9.0.0'
@@ -30,9 +30,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'redis', '~> 3.3.0'
 
   s.add_development_dependency 'rspec-rails', '~> 3.6.0'
-  s.add_development_dependency 'combustion', '~> 0.7.0'
-  s.add_development_dependency 'chromedriver-helper', '~> 1.1.0'
-  s.add_development_dependency 'selenium-webdriver', '~> 3.5.0'
+  s.add_development_dependency 'combustion', '~> 0.9.1'
+  s.add_development_dependency 'chromedriver-helper', '~> 1.2.0'
+  s.add_development_dependency 'selenium-webdriver', '~> 3.12.0'
   s.add_development_dependency 'faker', '~> 1.8.0'
   s.add_development_dependency 'database_cleaner', '~> 1.6.0'
   s.add_development_dependency 'timecop', '0.9.1'

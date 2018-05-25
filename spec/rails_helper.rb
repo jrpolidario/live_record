@@ -4,6 +4,7 @@ Dir[__dir__ + '/helpers/*.rb'].each {|file| require file }
 
 ActiveRecord::Migration.maintain_test_schema!
 
+Chromedriver.set_version '2.38'
 Capybara.javascript_driver = :selenium_chrome_headless # :selenium_chrome
 Capybara.server = :puma
 
