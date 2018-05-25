@@ -157,7 +157,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.3.3'
+    gem 'live_record', '~> 0.3.4'
     ```
 
 2. Run:
@@ -780,6 +780,9 @@ end
 * MIT
 
 ## Changelog
+* 0.3.4
+  * now supports Rails `~> 5.2` after being tested to work
+  * update dependency to Rails (and other dev gems) to use semantic versioning: `~> 5.0`, instead of `>= 5.0, < 5.3`
 * 0.3.3
   * now allows creating [`class` and `instance` methods](#example-2---model--associations--callbacks--methods) when creating a LiveRecord Model
   * added `after:reload` callback to `autoload()` and `subscribe()` when `reload: true` is passed, which triggers once after reloading has finished transmitting all records
