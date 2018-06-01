@@ -157,7 +157,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 0.3.6'
+    gem 'live_record', '~> 1.0.0'
     ```
 
 2. Run:
@@ -491,6 +491,24 @@
       LiveRecord.Model.all.Book.unsubscribe(subscription);
       ```
 
+## Setup (if as standalone Node JS module)
+
+```bash
+# bash
+npm install @jrpolidario/live_record --save
+```
+
+```js
+// js
+import { ActionCable } from 'actioncable'
+import { LiveRecord } from '@jrpolidario/live_record'
+
+const cable = ActionCable.createConsumer('wss://RAILS-API-PATH.com/cable')
+LiveRecord.init(cable)
+// LiveRecord.Model.create(...)
+// LiveRecord.Model.create(...)
+```
+
 ### Ransack Search Queries (Optional)
 
   * If you need more complex queries to pass into the `.subscribe(where: { ... })` or `.autoload({where: {...}})` above, [ransack](https://github.com/activerecord-hackery/ransack) gem is supported.
@@ -601,6 +619,9 @@ end
 * You may combine `data-live-record-destroy-from` and `data-live-record-update-from` within the same element.
 
 ## JS API
+
+### `LiveRecord.init(CABLE)`
+  * `CABLE` (ActionCable consumer Object, Required)
 
 ### `LiveRecord.Model.all`
   * Object of which properties are the models
@@ -783,8 +804,8 @@ end
 * see [developer_guide.md](developer_guide.md)
 
 ## Changelog
-* 0.3.6
-  * set up as a Node module
+* 1.0.0
+  * extracted as a Node module (JS code is now modularised, and now requires a major version increment; thus 1.0.0)
 * 0.3.4
   * now supports Rails `~> 5.2` after being tested to work
   * update dependency to Rails (and other dev gems) to use semantic versioning: `~> 5.0`, instead of `>= 5.0, < 5.3`

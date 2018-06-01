@@ -49,6 +49,12 @@ module LiveRecord
         end
       end
 
+      def update_cable_javascript
+        in_root do
+          insert_into_file 'app/assets/javascripts/cable.js', "\n  LiveRecord.init(App.cable);", after: "App.cable = ActionCable.createConsumer();"
+        end
+      end
+
       private
 
       def self.next_migration_number(dir)

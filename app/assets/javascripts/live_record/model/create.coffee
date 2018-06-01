@@ -79,7 +79,7 @@ this.LiveRecord.Model.create = (config) ->
     if config.callbacks.afterReload && !config.reload
       throw new Error('`afterReload` callback only works with `reload: true`')
 
-    subscription = App.cable.subscriptions.create(
+    subscription = LiveRecord.cable.subscriptions.create(
       {
         channel: 'LiveRecord::AutoloadsChannel'
         model_name: Model.modelName
@@ -162,7 +162,7 @@ this.LiveRecord.Model.create = (config) ->
     if config.callbacks.afterReload && !config.reload
       throw new Error('`afterReload` callback only works with `reload: true`')
 
-    subscription = App.cable.subscriptions.create(
+    subscription = LiveRecord.cable.subscriptions.create(
       {
         channel: 'LiveRecord::PublicationsChannel'
         model_name: Model.modelName
@@ -230,7 +230,7 @@ this.LiveRecord.Model.create = (config) ->
     index = @subscriptions.indexOf(subscription)
     throw new Error('`subscription` argument does not exist in ' + @modelName + ' subscriptions list') if index == -1
 
-    App.cable.subscriptions.remove(subscription)
+    LiveRecord.cable.subscriptions.remove(subscription)
 
     @subscriptions.splice(index, 1)
     subscription
@@ -246,7 +246,7 @@ this.LiveRecord.Model.create = (config) ->
     config.reload ||= false
 
     # listen for record changes (update / destroy)
-    subscription = App['live_record_' + @modelName() + '_' + @id()] = App.cable.subscriptions.create(
+    subscription = App['live_record_' + @modelName() + '_' + @id()] = LiveRecord.cable.subscriptions.create(
       {
         channel: 'LiveRecord::ChangesChannel'
         model_name: @modelName()
@@ -323,7 +323,7 @@ this.LiveRecord.Model.create = (config) ->
 
   Model.prototype.unsubscribe = ->
     return if @subscription == undefined
-    App.cable.subscriptions.remove(@subscription)
+    LiveRecord.cable.subscriptions.remove(@subscription)
     delete this['subscription']
 
   Model.prototype.isSubscribed = ->
