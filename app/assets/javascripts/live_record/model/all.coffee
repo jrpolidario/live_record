@@ -1,1 +1,1 @@
-LiveRecord.Model.all = {}
+this.LiveRecord.Model.all = {}

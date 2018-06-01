@@ -1,4 +1,4 @@
-LiveRecord.Model.create = (config) ->
+this.LiveRecord.Model.create = (config) ->
   config.modelName != undefined || throw new Error('missing :modelName argument')
   config.callbacks != undefined || config.callbacks = {}
   config.plugins != undefined || config.callbacks = {}

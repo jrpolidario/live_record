@@ -1,3 +1,3 @@
 #= require_self
 
-LiveRecord.plugins ||= {}
+this.LiveRecord.plugins ||= {}

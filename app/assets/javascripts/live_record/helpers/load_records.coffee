@@ -1,4 +1,4 @@
-LiveRecord.helpers.loadRecords = (args) ->
+this.LiveRecord.helpers.loadRecords = (args) ->
   args['modelName'] || throw new Error(':modelName argument required')
   throw new Error(':modelName is not defined in LiveRecord.Model.all') if LiveRecord.Model.all[args['modelName']] == undefined
 

@@ -1,6 +1,6 @@
 # ref: https://jamesroberts.name/blog/2010/02/22/string-functions-for-javascript-trim-to-camel-case-to-dashed-and-to-underscore/
 
-LiveRecord.helpers.caseConverter =
+this.LiveRecord.helpers.caseConverter =
   toCamel: (string) ->
     string.replace(
       /(\-[a-z])/g,

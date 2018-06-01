@@ -1,6 +1,6 @@
 # ref: https://stackoverflow.com/questions/34852855/combined-comparison-spaceship-operator-in-javascript
 
-LiveRecord.helpers.spaceship = (val1, val2) ->
+this.LiveRecord.helpers.spaceship = (val1, val2) ->
   if val1 == null or val2 == null or typeof val1 != typeof val2
     return null
   if typeof val1 == 'string'

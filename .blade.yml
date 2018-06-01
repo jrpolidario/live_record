@@ -1,0 +1,11 @@
+load_paths:
+  - app/assets/javascripts
+
+logical_paths:
+  - live_record.coffee
+
+build:
+  logical_paths:
+    - live_record.js
+  path: lib/assets/compiled
+  clean: true

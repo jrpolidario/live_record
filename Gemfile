@@ -8,4 +8,6 @@ group :development, :test do
   gem 'factory_girl_rails', '~> 4.8', require: false
   # do not require to prevent Capybara deprecation warning on rspec run
   gem 'capybara', '~> 3.1', require: false
+
+  gem 'sprockets-export', '~> 1.0.0', require: false
 end

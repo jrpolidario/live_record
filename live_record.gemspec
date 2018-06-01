@@ -22,9 +22,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'byebug', '~> 9.0'
 
   s.add_development_dependency 'sprockets-rails', '~> 3.2'
+  s.add_development_dependency 'sprockets-export', '~> 1.0'
   s.add_development_dependency 'coffee-rails', '~> 4.2'
   s.add_development_dependency 'jquery-rails', '~> 4.3'
   s.add_development_dependency 'jbuilder', '~> 2.7'
+  s.add_development_dependency 'blade', '~> 0.7'
 
   s.add_development_dependency 'sqlite3', '~> 1.3'
   s.add_development_dependency 'redis', '~> 3.3'

@@ -1,4 +1,4 @@
-LiveRecord.plugins.LiveDOM.applyToModel = (Model, pluginValue) ->
+this.LiveRecord.plugins.LiveDOM.applyToModel = (Model, pluginValue) ->
   return if pluginValue != true
 
   # DOM callbacks
