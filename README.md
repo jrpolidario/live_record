@@ -779,7 +779,12 @@ end
 ## License
 * MIT
 
+## Developer Guide
+* see [developer_guide.md](developer_guide.md)
+
 ## Changelog
+* 0.3.6
+  * set up as a Node module
 * 0.3.4
   * now supports Rails `~> 5.2` after being tested to work
   * update dependency to Rails (and other dev gems) to use semantic versioning: `~> 5.0`, instead of `>= 5.0, < 5.3`
