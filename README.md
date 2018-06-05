@@ -157,7 +157,7 @@
 1. Add the following to your `Gemfile`:
 
     ```ruby
-    gem 'live_record', '~> 1.0.0'
+    gem 'live_record', '~> 1.0'
     ```
 
 2. Run:

@@ -9,5 +9,5 @@ group :development, :test do
   # do not require to prevent Capybara deprecation warning on rspec run
   gem 'capybara', '~> 3.1', require: false
 
-  gem 'sprockets-export', '~> 1.0.0', require: false
+  gem 'sprockets-export', '~> 1.0', require: false
 end
