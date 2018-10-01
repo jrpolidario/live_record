@@ -1,6 +1,6 @@
 {
   "name": "@jrpolidario/live_record",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Auto-syncs records in client-side JS (through a Model DSL) from changes (updates/destroy) in the backend Rails server through ActionCable.\\n Also supports streaming newly created records to client-side JS.\\n Supports lost connection restreaming for both new records (create), and record-changes (updates/destroy).\\n Auto-updates DOM elements mapped to a record attribute, from changes (updates/destroy).",
   "main": "lib/assets/compiled/live_record.js",
   "repository": {

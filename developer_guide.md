@@ -4,7 +4,7 @@
 
 ```bash
 # [increment gem VERSION]
-gem build live_record
+gem build live_record.gemspec
 gem push live_record-X.X.X.gem
 ```
 

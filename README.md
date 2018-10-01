@@ -804,6 +804,8 @@ end
 * see [developer_guide.md](developer_guide.md)
 
 ## Changelog
+* 1.0.2
+  * removed unnecessary remnant code from past debugging
 * 1.0.0
   * extracted as a Node module (JS code is now modularised, and now requires a major version increment; thus 1.0.0)
 * 0.3.4
