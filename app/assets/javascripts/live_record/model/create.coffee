@@ -87,6 +87,11 @@ this.LiveRecord.Model.create = (config) ->
       },
 
       connected: ->
+        @liveRecord.isSubscribed = true
+
+        # perform all if there are perform-ables in the queue while disconnected
+        @performAllInQueue()
+
         # if forced reload of all records after subscribing, reload only once at the very start of connection, and no longer when reconnecting
         if config.reload
           config.reload = false
@@ -98,6 +103,7 @@ this.LiveRecord.Model.create = (config) ->
         config.callbacks['on:connect'].call(this) if config.callbacks['on:connect']
 
       disconnected: ->
+        @liveRecord.isSubscribed = false
         @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
         config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
 
@@ -122,7 +128,7 @@ this.LiveRecord.Model.create = (config) ->
 
           config.callbacks['before:createOrUpdate'].call(this, record) if config.callbacks['before:createOrUpdate']
           if doesRecordAlreadyExist
-            record.update(data.attributes)
+            record.update(data.attributes, { shouldPush: false })
           else
             record.create()
           config.callbacks['after:createOrUpdate'].call(this, record) if config.callbacks['after:createOrUpdate']
@@ -138,16 +144,41 @@ this.LiveRecord.Model.create = (config) ->
           console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
 
       syncRecords: ->
-        @perform(
-          'sync_records',
-          model_name: Model.modelName,
-          where: config.where,
-          stale_since: @liveRecord._staleSince
+        @performOrAddToQueue(
+          [
+            'sync_records',
+            {
+              model_name: Model.modelName,
+              where: config.where,
+              stale_since: @liveRecord._staleSince
+            }
+          ],
+          {
+            'after:perform': ->
+              @liveRecord._staleSince = undefined
+          }
         )
-        @liveRecord._staleSince = undefined
+
+      performWithCallbacks: (performArguments, callbacks) ->
+        callbacks['before:perform'].call(this) if callbacks['before:perform']
+        @perform.apply(this, performArguments)
+        callbacks['after:perform'].call(this) if callbacks['after:perform']
+
+      performOrAddToQueue: (performArguments, callbacks) ->
+        if (@liveRecord.isSubscribed)
+          @performWithCallbacks(performArguments, callbacks)
+        else
+          @liveRecord.performQueue << [performArguments, callbacks]
+
+      performAllInQueue: ->
+        for performArgumentsAndCallbacks in @liveRecord.performQueue
+          @performWithCallbacks(performArgumentsAndCallbacks[0], performArgumentsAndCallbacks[1])
+          @liveRecord.performQueue.shift()
     )
 
     subscription.liveRecord = {}
+    subscription.liveRecord.isSubscribed = false
+    subscription.liveRecord.performQueue = []
     subscription.liveRecord.modelName = Model.modelName
     subscription.liveRecord.where = config.where
     subscription.liveRecord.callbacks = config.callbacks
@@ -170,6 +201,11 @@ this.LiveRecord.Model.create = (config) ->
       },
 
       connected: ->
+        @liveRecord.isSubscribed = true
+
+        # perform all if there are perform-ables in the queue while disconnected
+        @performAllInQueue()
+
         # if forced reload of all records after subscribing, reload only once at the very start of connection, and no longer when reconnecting
         if config.reload
           config.reload = false
@@ -181,6 +217,7 @@ this.LiveRecord.Model.create = (config) ->
         config.callbacks['on:connect'].call(this) if config.callbacks['on:connect']
 
       disconnected: ->
+        @liveRecord.isSubscribed = false
         @liveRecord._staleSince = (new Date()).toISOString() unless @liveRecord._staleSince
         config.callbacks['on:disconnect'].call(this) if config.callbacks['on:disconnect']
 
@@ -193,9 +230,9 @@ this.LiveRecord.Model.create = (config) ->
 
       onAction:
         create: (data) ->
-          record = new Model(data.attributes)
+          record = Model.create(data.attributes)
           config.callbacks['before:create'].call(this, record) if config.callbacks['before:create']
-          record.create()
+          record = Model.create(data.attributes)
           config.callbacks['after:create'].call(this, record) if config.callbacks['after:create']
 
         afterReload: (data) ->
@@ -209,16 +246,41 @@ this.LiveRecord.Model.create = (config) ->
           console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', this)
 
       syncRecords: ->
-        @perform(
-          'sync_records',
-          model_name: Model.modelName,
-          where: config.where,
-          stale_since: @liveRecord._staleSince
+        @performOrAddToQueue(
+          [
+            'sync_records',
+            {
+              model_name: Model.modelName,
+              where: config.where,
+              stale_since: @liveRecord._staleSince
+            }
+          ],
+          {
+            'after:perform': ->
+              @liveRecord._staleSince = undefined
+          }
         )
-        @liveRecord._staleSince = undefined
+
+      performWithCallbacks: (performArguments, callbacks) ->
+        callbacks['before:perform'].call(this) if callbacks['before:perform']
+        @perform.apply(this, performArguments)
+        callbacks['after:perform'].call(this) if callbacks['after:perform']
+
+      performOrAddToQueue: (performArguments, callbacks) ->
+        if (@liveRecord.isSubscribed)
+          @performWithCallbacks(performArguments, callbacks)
+        else
+          @liveRecord.performQueue << [performArguments, callbacks]
+
+      performAllInQueue: ->
+        for performArgumentsAndCallbacks in @liveRecord.performQueue
+          @performWithCallbacks(performArgumentsAndCallbacks[0], performArgumentsAndCallbacks[1])
+          @liveRecord.performQueue.shift()
     )
 
     subscription.liveRecord = {}
+    subscription.liveRecord.isSubscribed = false
+    subscription.liveRecord.performQueue = []
     subscription.liveRecord.modelName = Model.modelName
     subscription.liveRecord.where = config.where
     subscription.liveRecord.callbacks = config.callbacks
@@ -234,6 +296,19 @@ this.LiveRecord.Model.create = (config) ->
 
     @subscriptions.splice(index, 1)
     subscription
+
+  Model.create = (attributes, options = {}) ->
+    options.shouldPush = true if options.shouldPush == undefined
+
+    throw new Error(Model.modelName+'('+@id()+') is already in the store') if attributes.id && Model.all[@attributes.id]
+    @_callCallbacks('before:create', undefined)
+    record = new Model(attributes)
+    record.store()
+    @_callCallbacks('after:create', undefined)
+
+    @subscription.update(attributes) if options.shouldPush
+    LiveRecord.cable
+    this
 
   # create class methods
   for methodKey, methodValue of config.classMethods
@@ -260,6 +335,11 @@ this.LiveRecord.Model.create = (config) ->
 
       # on: connect
       connected: ->
+        @liveRecord.isSubscribed = true
+
+        # perform all if there are perform-ables in the queue while disconnected
+        @performAllInQueue()
+
         # if forced reload of this record after subscribing, reload only once at the very start of connection, and no longer when reconnecting
         if config.reload
           config.reload = false
@@ -272,6 +352,7 @@ this.LiveRecord.Model.create = (config) ->
 
       # on: disconnect
       disconnected: ->
+        @liveRecord.isSubscribed = false
         @record()._staleSince = (new Date()).toISOString() unless @record()._staleSince
         @record()._callCallbacks('on:disconnect', undefined)
 
@@ -289,7 +370,7 @@ this.LiveRecord.Model.create = (config) ->
       onAction:
         update: (data) ->
           @record()._setChangesFrom(data.attributes)
-          @record().update(data.attributes)
+          @record().update(data.attributes, { shouldPush: false })
           @record()._unsetChanges()
 
         destroy: (data) ->
@@ -301,19 +382,55 @@ this.LiveRecord.Model.create = (config) ->
           console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
         bad_request: (data) ->
           console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
+        invalid: (data) ->
+          console.error('[LiveRecord Response Error]', data.error.code, ':', data.error.message, 'for', @record())
 
       # syncs local record from remote record
       syncRecord: ->
-        @perform(
-          'sync_record',
+        @performOrAddToQueue(
+          [
+            'sync_record',
+            model_name: @record().modelName(),
+            record_id: @record().id(),
+            stale_since: @record()._staleSince
+          ],
+          {
+            'after:perform': ->
+              @record()._staleSince = undefined
+          }
+        )
+
+      # updates remote record
+      update: (attributes) ->
+        @performOrAddToQueue([
+          'update',
           model_name: @record().modelName(),
           record_id: @record().id(),
-          stale_since: @record()._staleSince
-        )
-        @record()._staleSince = undefined
+          attributes: attributes
+        ])
+
+      performWithCallbacks: (performArguments, callbacks = {}) ->
+        callbacks['before:perform'].call(this) if callbacks['before:perform']
+        @perform.apply(this, performArguments)
+        callbacks['after:perform'].call(this) if callbacks['after:perform']
+
+      performOrAddToQueue: (performArguments, callbacks) ->
+        if (@liveRecord.isSubscribed)
+          @performWithCallbacks(performArguments, callbacks)
+        else
+          @liveRecord.performQueue.push([performArguments, callbacks])
+
+      performAllInQueue: ->
+        for performArgumentsAndCallbacks in @liveRecord.performQueue
+          @performWithCallbacks(performArgumentsAndCallbacks[0], performArgumentsAndCallbacks[1])
+          @liveRecord.performQueue.shift()
     )
 
+    subscription.liveRecord = {}
+    subscription.liveRecord.isSubscribed = false
+    subscription.liveRecord.performQueue = []
     @subscription = subscription
+
 
   Model.prototype.model = ->
     Model
@@ -327,23 +444,61 @@ this.LiveRecord.Model.create = (config) ->
     delete this['subscription']
 
   Model.prototype.isSubscribed = ->
-    @subscription != undefined
+    @subscription.liveRecord.isSubscribed
 
   # CREATE
-  Model.prototype.create = (options) ->
+  Model.prototype.store = (options) ->
     throw new Error(Model.modelName+'('+@id()+') is already in the store') if Model.all[@attributes.id]
-    @_callCallbacks('before:create', undefined)
-
-    Model.all[@attributes.id] = this
-    # because we do not know if this newly created object is stale upon creation, then we force reload it
-    @subscribe({reload: true})
-
-    @_callCallbacks('after:create', undefined)
+    @_callCallbacks('before:store', undefined)
+    @store()
+    @_callCallbacks('after:store', undefined)
     this
 
+  # ASSIGN ATTRIBUTES
+  # Model.prototype.assignAttributes = (attributes) ->
+  #   self = this
+  #
+  #   # sometimes there are new attributes that were not there yet upon initialization
+  #   # so when updated() make sure to create helper getter functions for each new attribute as below
+  #   Object.keys(attributes).forEach (attribute_key) ->
+  #     if Model.prototype[attribute_key] == undefined
+  #       Model.prototype[attribute_key] = ->
+  #         @attributes[attribute_key]
+  #
+  #   @_callCallbacks('before:update', undefined)
+  #
+  #   Object.keys(attributes).forEach (attribute_key) ->
+  #     self.attributes[attribute_key] = attributes[attribute_key]
+  #
+  #   @_callCallbacks('after:update', undefined)
+  #   true
+
+  # DESTROY
+  Model.prototype.destroy = ->
+    @_callCallbacks('before:destroy', undefined)
+
+    @unsubscribe()
+    delete Model.all[@attributes.id]
+
+    @_callCallbacks('after:destroy', undefined)
+    this
+  #
+  # Model.prototype.ensureGettersAndSetters = (attributes) -> {
+  #   # sometimes there are new attributes that were not there yet upon initialization
+  #   # so when updated() make sure to create helper getter functions for each new attribute as below
+  #   Object.keys(attributes).forEach (attribute_key) ->
+  #     if Model.prototype[attribute_key] == undefined
+  #       Model.prototype[attribute_key] = ->
+  #         @attributes[attribute_key]
+  # }
+
   # UPDATE
-  Model.prototype.update = (attributes) ->
+
+  Model.prototype.update = (attributes, options = {}) ->
     self = this
+
+    if options.shouldPush == undefined
+      options.shouldPush = true
 
     # sometimes there are new attributes that were not there yet upon initialization
     # so when updated() make sure to create helper getter functions for each new attribute as below
@@ -357,18 +512,16 @@ this.LiveRecord.Model.create = (config) ->
     Object.keys(attributes).forEach (attribute_key) ->
       self.attributes[attribute_key] = attributes[attribute_key]
 
+    if options.shouldPush
+      @subscription.update(attributes)
+
     @_callCallbacks('after:update', undefined)
     true
 
-  # DESTROY
-  Model.prototype.destroy = ->
-    @_callCallbacks('before:destroy', undefined)
-
-    @unsubscribe()
-    delete Model.all[@attributes.id]
-
-    @_callCallbacks('after:destroy', undefined)
-    this
+  Model.prototype.store = ->
+    Model.all[@attributes.id] = this
+    # because we do not know if this newly created object is stale upon creation, then we force reload it
+    @subscribe({reload: true})
 
   # CALLBACKS
 

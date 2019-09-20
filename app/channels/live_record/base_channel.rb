@@ -30,6 +30,8 @@ class LiveRecord::BaseChannel < ActionCable::Channel::Base
       transmit error: { 'code' => 'forbidden', 'message' => (message || 'You are not authorised') }
     when :bad_request
       transmit error: { 'code' => 'bad_request', 'message' => (message || 'Invalid request parameters') }
+    when :invalid
+      transmit error: { 'code' => 'invalid', 'message' => message }
     end
   end
 end

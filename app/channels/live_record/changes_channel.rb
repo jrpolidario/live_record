@@ -5,28 +5,28 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
 
   def subscribed
     find_record_from_params(params) do |record|
-      whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
+      readable_attributes = LiveRecord::BaseChannel::Helpers.readable_attributes(record, current_user)
 
-      if whitelisted_attributes.present?
+      if readable_attributes.present?
         stream_for record, coder: ActiveSupport::JSON do |message|
           begin
             record.reload
           rescue ActiveRecord::RecordNotFound
           end
 
-          whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
+          readable_attributes = LiveRecord::BaseChannel::Helpers.readable_attributes(record, current_user)
 
-          if whitelisted_attributes.size > 0
-            response = filtered_message(message, whitelisted_attributes)
+          if readable_attributes.size > 0
+            response = filtered_message(message, readable_attributes)
             transmit response if response.present?
           else
             respond_with_error(:forbidden)
-            reject_subscription
+            # reject_subscription
           end
         end
       else
         respond_with_error(:forbidden)
-        reject
+        # reject
       end
     end
   end
@@ -35,9 +35,9 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
     params = data.symbolize_keys
 
     find_record_from_params(params) do |record|
-      whitelisted_attributes = LiveRecord::BaseChannel::Helpers.whitelisted_attributes(record, current_user)
+      readable_attributes = LiveRecord::BaseChannel::Helpers.readable_attributes(record, current_user)
 
-      if whitelisted_attributes.size > 0
+      if readable_attributes.size > 0
         live_record_updates = nil
 
         if params[:stale_since].present?
@@ -53,12 +53,34 @@ class LiveRecord::ChangesChannel < LiveRecord::BaseChannel
         # then we update the record in the client-side
         if params[:stale_since].blank? || live_record_updates.exists?
           message = { 'action' => 'update', 'attributes' => record.attributes }
-          response = filtered_message(message, whitelisted_attributes)
+          response = filtered_message(message, readable_attributes)
           transmit response if response.present?
         end
       else
         respond_with_error(:forbidden)
-        reject_subscription
+        # reject_subscription
+      end
+    end
+  end
+
+  def update(data)
+    params = data.symbolize_keys
+
+    find_record_from_params(params) do |record|
+      updateable_attributes = LiveRecord::BaseChannel::Helpers.updateable_attributes(record, current_user)
+
+      if updateable_attributes.size > 0
+        whitelisted_changed_attributes = params[:attributes].slice(*updateable_attributes)
+
+        if record.update(whitelisted_changed_attributes)
+          # if successful, do nothing: dont transmit any WS response stream for efficiency,
+          # as `update` callback will be triggered in the JS client-side anyway
+        else
+          respond_with_error(:invalid, record.errors.messages)
+        end
+      else
+        respond_with_error(:forbidden)
+        # reject_subscription
       end
     end
   end

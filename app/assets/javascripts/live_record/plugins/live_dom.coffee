@@ -4,4 +4,4 @@
 this.LiveRecord.plugins.LiveDOM ||= {}
 
 if window.jQuery == undefined
-  throw new Error('jQuery is not loaded yet, and is a dependency of LiveRecord')
+  throw new Error('jQuery is not loaded yet, and is a dependency of LiveDOM plugin')

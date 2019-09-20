@@ -34,4 +34,9 @@ RSpec.configure do |config|
     DatabaseCleaner.strategy = :truncation
     DatabaseCleaner.clean
   end
+
+  # show browser error logs ref: https://stackoverflow.com/questions/46278514/capture-browser-console-logs-with-capybara
+  config.after(:each, type: :feature) do
+    puts page.driver.browser.manage.logs.get(:browser)
+  end
 end
