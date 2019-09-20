@@ -22,3 +22,11 @@ npm publish --access=public
 ```bash
 bundle exec rspec
 ```
+
+### Notes
+* capture and print to STDOUT selenium JS console errors:
+
+```
+# some spec file
+puts page.driver.browser.manage.logs.get(:browser)
+```
